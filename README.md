@@ -26,3 +26,16 @@ Para publicar no GitHub Pages: suba este conteúdo na raiz do repositório (ou e
 14. Fecho
 
 O progresso do aluno fica salvo no navegador (localStorage).
+
+---
+
+# Dashboard — Autorizador Crédito PF (protótipo)
+
+Pasta [`dashboard-autorizador/`](dashboard-autorizador/). Slide único 16:9 em HTML + d3 com **dados fictícios**, para apresentar os resultados do autorizador de crédito PF.
+
+- Três seções: **Demanda × Faturamento**, **Risco de Crédito** e **Rentabilidade**, cada uma com o takeaway escrito abaixo do gráfico.
+- Risco de Crédito em um gráfico só: aprovados × negados, ação × controle e **previsibilidade** (Over5 MOB0 → Over15 MOB1 → Over30 MOB2 → Over30 MOB3, com IC que encolhe conforme a safra amadurece).
+- Rentabilidade por safra empilhada por MOB, com candles de dispersão e estimativa "mais provável" (chain-ladder com peso de recência + bootstrap).
+- Filtros no topo e menu de takeaways da IA (← → navega entre as visões).
+
+Abra `dashboard-autorizador/index.html` no navegador. O d3 vem do CDN, com cópia local em `vendor/` caso a rede bloqueie.

@@ -1,0 +1,1604 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autorizador Crédito PF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script>window.d3 || document.write('<script src="vendor/d3.v7.min.js"><\/script>')</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:#d3d7df;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;transition:background .3s}
+body.dark{background:#02040a}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input{font:inherit}
+
+/* ---------- slide 1920×1080, escalado para caber na tela ---------- */
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;
+  display:grid;grid-template-rows:96px minmax(0,1fr);background:var(--page);color:var(--ink);overflow:hidden;transition:background .3s,color .3s;
+  --page:#f2f4f8;--card:#ffffff;--card-2:#f6f7fa;--seg:#edf0f5;--line:rgba(11,31,69,.08);--line-2:rgba(11,31,69,.16);
+  --ink:#0b1a33;--ink-2:#44506a;--muted:#77819a;--grid:#eceef3;--axis:#c6cbd6;
+  --navy:#0b1f45;--navy-2:#163a7c;--navy-ink:#0b1f45;--navy-soft:rgba(11,31,69,.06);
+  --c-fat:#ec7000;--c-dem:#2f6bd8;--c-ctrl:#7f8794;--c-ctrl-2:#b3b8c0;--c-hist:#c2c8d3;
+  --band-fat:rgba(236,112,0,.15);--band-dem:rgba(47,107,216,.14);--band-ctrl:rgba(127,135,148,.16);
+  --gap:rgba(47,107,216,.07);--proj-bg:rgba(11,31,69,.03);--mat-bg:rgba(11,31,69,.055);
+  --ai:#6a4fd6;--ai-soft:rgba(106,79,214,.075);--ai-line:rgba(106,79,214,.5);
+  --good:#0a7d0a;--good-bg:rgba(12,163,12,.11);--crit:#c13030;--crit-bg:rgba(208,59,59,.10);
+  --warn:#8f5d00;--warn-bg:rgba(250,178,25,.2);--info:#2459c2;--info-bg:rgba(47,107,216,.10);
+  --tk-bg:#f2f5fb;--tip-bg:#0b1f45;--tip-ink:#ffffff;--tip-mut:#9db0d4;
+  --shadow:0 1px 2px rgba(11,31,69,.05),0 14px 34px -22px rgba(11,31,69,.28);
+  --pop-shadow:0 28px 60px -22px rgba(11,31,69,.45),0 2px 6px rgba(11,31,69,.08);
+}
+#stage.dark{--page:#070b13;--card:#0e1628;--card-2:#121c31;--seg:#0a1121;--line:rgba(255,255,255,.07);--line-2:rgba(255,255,255,.15);
+  --ink:#eef2fa;--ink-2:#bfc8da;--muted:#8792aa;--grid:#19223a;--axis:#2c3750;
+  --navy:#1f3d7d;--navy-2:#2c56a8;--navy-ink:#eef2fa;--navy-soft:rgba(255,255,255,.05);
+  --c-fat:#dc6a08;--c-dem:#4a8be8;--c-ctrl:#8b93a1;--c-ctrl-2:#596273;--c-hist:#3a465e;
+  --band-fat:rgba(220,106,8,.24);--band-dem:rgba(74,139,232,.22);--band-ctrl:rgba(139,147,161,.18);
+  --gap:rgba(74,139,232,.10);--proj-bg:rgba(255,255,255,.022);--mat-bg:rgba(255,255,255,.05);
+  --ai:#a897ff;--ai-soft:rgba(168,151,255,.09);--ai-line:rgba(168,151,255,.55);
+  --good:#45c845;--good-bg:rgba(12,163,12,.17);--crit:#ff7a7a;--crit-bg:rgba(208,59,59,.2);
+  --warn:#f5b73b;--warn-bg:rgba(250,178,25,.15);--info:#83b3f6;--info-bg:rgba(74,139,232,.17);
+  --tk-bg:#121d36;--tip-bg:#1a2a4d;--tip-ink:#ffffff;--tip-mut:#a7b6d6;
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 14px 34px -22px rgba(0,0,0,.8);
+  --pop-shadow:0 28px 60px -22px rgba(0,0,0,.8);
+}
+
+/* ---------- faixa azul-escura do topo ---------- */
+.band{position:relative;display:flex;align-items:center;gap:16px;padding:0 24px;color:#fff;z-index:30;
+  background:radial-gradient(900px 260px at 92% -30%,rgba(236,112,0,.20),transparent 60%),radial-gradient(700px 300px at 8% 140%,rgba(106,79,214,.22),transparent 60%),linear-gradient(115deg,#071530 0%,#0c2250 55%,#123068 100%)}
+#stage.dark .band{background:radial-gradient(900px 260px at 92% -30%,rgba(236,112,0,.13),transparent 60%),radial-gradient(700px 300px at 8% 140%,rgba(106,79,214,.16),transparent 60%),linear-gradient(115deg,#040b1c 0%,#08173a 60%,#0d2350 100%)}
+.band::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,#ec7000 0%,#ec7000 18%,#8a5ad8 52%,rgba(138,90,216,0) 100%)}
+.ttl{flex:1;min-width:0}
+.eyebrow{font-size:11.5px;font-weight:650;letter-spacing:.09em;text-transform:uppercase;color:#93a7cf;display:flex;align-items:center;gap:9px}
+.eyebrow i{width:18px;height:3px;border-radius:2px;background:#ec7000;display:inline-block}
+h1{font-size:30px;font-weight:750;letter-spacing:-.025em;line-height:1.15;margin-top:6px;white-space:nowrap;color:#fff}
+h1 span{color:#5f78ab;font-weight:400}
+.filters{display:flex;gap:8px}
+.flt{position:relative}
+.flt-btn{height:54px;min-width:118px;max-width:188px;padding:8px 30px 8px 13px;border:1px solid rgba(255,255,255,.15);border-radius:12px;background:rgba(255,255,255,.06);text-align:left;position:relative;transition:background .15s,border-color .15s;color:#fff}
+.flt-btn:hover{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.28)}
+.flt-btn .l{display:block;font-size:10.5px;font-weight:650;letter-spacing:.07em;text-transform:uppercase;color:#8fa4cd;white-space:nowrap}
+.flt-btn .v{display:block;font-size:14px;font-weight:600;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.flt-btn::after{content:'';position:absolute;right:13px;top:50%;width:6px;height:6px;border-right:1.6px solid #8fa4cd;border-bottom:1.6px solid #8fa4cd;transform:translateY(-75%) rotate(45deg)}
+.flt-btn.on{background:#fff;border-color:#fff;box-shadow:0 8px 20px -10px rgba(0,0,0,.5)}
+.flt-btn.on .l{color:#5d6c8d}
+.flt-btn.on .v{color:#0b1f45}
+.flt-btn.on::after{border-color:#0b1f45}
+.tk{position:relative}
+.tk-btn{height:54px;padding:0 14px;border-radius:12px;display:flex;align-items:center;gap:11px;color:#fff;width:296px;text-align:left;
+  background:linear-gradient(135deg,#5a3fd0 0%,#8a4fd6 58%,#ec7000 135%);box-shadow:0 10px 24px -12px rgba(138,79,214,.9),inset 0 0 0 1px rgba(255,255,255,.18)}
+.tk-btn:hover{filter:brightness(1.07)}
+.tk-btn .spark{font-size:19px;line-height:1}
+.tk-btn .tx{flex:1;min-width:0}
+.tk-btn .t1{display:block;font-size:10.5px;font-weight:650;letter-spacing:.07em;text-transform:uppercase;opacity:.85}
+.tk-btn .t2{display:block;font-size:14px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.tk-btn .badge{background:rgba(255,255,255,.22);border-radius:999px;font-size:12px;font-weight:700;padding:3px 9px}
+
+/* ---------- popovers ---------- */
+.pop{position:absolute;top:calc(100% + 10px);right:0;z-index:80;background:var(--card);color:var(--ink);border:1px solid var(--line-2);border-radius:14px;box-shadow:var(--pop-shadow);padding:6px;min-width:250px;display:none}
+.pop.open{display:block;animation:pop .14s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.pop-hd{font-size:10.5px;font-weight:650;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px 10px 6px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.pop-hd button{font-size:12px;color:var(--ink-2);text-transform:none;letter-spacing:0;font-weight:600;padding:2px 6px;border-radius:6px}
+.pop-hd button:hover{background:var(--card-2)}
+.opt{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:9px;font-size:13.5px;text-align:left;white-space:nowrap}
+.opt:hover{background:var(--card-2)}
+.opt .box{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--line-2);flex:none;display:grid;place-items:center}
+.opt.sel .box{background:var(--navy);border-color:var(--navy)}
+.opt.sel .box::after{content:'';width:8px;height:4px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translate(0,-1px) rotate(-45deg)}
+.opt .nm{flex:1}
+.opt .mt{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tag{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:5px;background:var(--ai-soft);color:var(--ai)}
+.tk-menu{width:620px;padding:8px}
+.tk-menu .pop-hd{padding:6px 10px 10px}
+.tki{display:grid;grid-template-columns:1fr auto;gap:5px 14px;width:100%;text-align:left;padding:10px 12px;border-radius:11px;border:1px solid transparent}
+.tki:hover{background:var(--card-2)}
+.tki.on{border-color:var(--ai-line);background:var(--ai-soft)}
+.tki .tt{font-size:13.5px;font-weight:650;line-height:1.32;display:flex;gap:8px;align-items:baseline}
+.tki .tt .ix{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+.tki .kn{font-size:17px;font-weight:750;text-align:right;align-self:center;white-space:nowrap;color:var(--navy-ink)}
+.tki .ch{display:flex;gap:5px;flex-wrap:wrap;grid-column:1 / -1;align-items:center;padding-left:18px}
+.mini{font-size:11px;font-weight:550;color:var(--ink-2);background:var(--card-2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;white-space:nowrap}
+.tk-foot{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);padding:10px 12px 4px;border-top:1px solid var(--line);margin-top:6px}
+.sev{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.01em;text-transform:none}
+.sev.crit{color:var(--crit);background:var(--crit-bg)}
+.sev.warn{color:var(--warn);background:var(--warn-bg)}
+.sev.info{color:var(--info);background:var(--info-bg)}
+.sev.good{color:var(--good);background:var(--good-bg)}
+
+/* ---------- corpo ---------- */
+.body{display:grid;grid-template-rows:46px minmax(0,1fr) 18px;row-gap:14px;padding:16px 24px 12px;min-height:0}
+.bar{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:0 6px 0 14px;box-shadow:var(--shadow);position:relative;z-index:20;min-width:0}
+.view{display:flex;align-items:center;gap:8px;flex:1;min-width:0;overflow:hidden;white-space:nowrap}
+.view .lb{font-size:10.5px;font-weight:650;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.view .vt{font-size:13.5px;font-weight:700;color:var(--navy-ink)}
+.view .va{font-size:13px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;min-width:0}
+.view .va b{color:var(--ai);font-weight:650}
+.chip{display:inline-flex;align-items:center;gap:6px;height:27px;padding:0 5px 0 10px;border-radius:999px;background:var(--card-2);border:1px solid var(--line);font-size:12.5px;font-weight:600;white-space:nowrap}
+.chip b{font-weight:500;color:var(--muted)}
+.chip button{width:19px;height:19px;border-radius:50%;display:grid;place-items:center;color:var(--muted);font-size:14px;line-height:1}
+.chip button:hover{background:var(--line);color:var(--ink)}
+.chip.plain{padding:0 11px}
+.chip.ai{background:var(--ai-soft);border-color:transparent;color:var(--ai);padding:0 11px}
+.clear{font-size:12px;font-weight:600;color:var(--muted);padding:4px 8px;border-radius:7px;white-space:nowrap}
+.clear:hover{color:var(--ink);background:var(--card-2)}
+.ctrls{display:flex;align-items:center;flex:none}
+.ctl{display:flex;align-items:center;gap:9px;padding:0 14px;height:30px;border-left:1px solid var(--line);font-size:13px;font-weight:600;color:var(--ink-2);white-space:nowrap;transition:opacity .2s}
+.ctl:first-child{border-left:0}
+.ctl.dis{opacity:.42}
+.ctl.dis .sw{pointer-events:none}
+.sw{position:relative;width:34px;height:20px;display:inline-block;flex:none;cursor:pointer}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw span{position:absolute;inset:0;background:var(--line-2);border-radius:20px;transition:background .2s}
+.sw span::before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.sw input:checked+span{background:var(--navy)}
+#stage.dark .sw input:checked+span{background:var(--c-dem)}
+.sw input:checked+span::before{transform:translateX(14px)}
+.sw input:focus-visible+span{outline:2px solid var(--ai);outline-offset:2px}
+.seg{display:inline-flex;background:var(--seg);border-radius:9px;padding:2px;gap:1px;flex:none}
+.seg button{font-size:12px;font-weight:600;padding:4px 9px;border-radius:7px;color:var(--muted);white-space:nowrap;transition:background .15s,color .15s}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--navy);color:#fff;box-shadow:0 2px 6px -2px rgba(11,31,69,.5)}
+.seg.dis{opacity:.45;pointer-events:none}
+.ib{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:16px;color:var(--ink-2)}
+.ib:hover{background:var(--card-2);color:var(--ink)}
+
+/* ---------- 3 seções ---------- */
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;min-height:0}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:20px 22px 18px;display:flex;flex-direction:column;min-height:0;min-width:0;position:relative;transition:background .3s}
+.sec::before{content:'';position:absolute;left:22px;width:56px;top:-1px;height:4px;border-radius:0 0 4px 4px;background:var(--navy)}
+.sec-hd{position:relative;min-height:50px}
+.sec-hd > .seg,.sec-hd > .rtools{position:absolute;right:0;top:1px}
+.sec-tt{display:flex;gap:12px;align-items:flex-start;min-width:0;flex:1}
+.num{width:34px;height:34px;border-radius:10px;background:var(--navy);color:#fff;font-size:13px;font-weight:750;display:grid;place-items:center;flex:none;letter-spacing:.03em;box-shadow:inset 0 -2px 0 rgba(236,112,0,.9)}
+.sec-tt .tt{min-width:0}
+.sec h2{font-size:20px;font-weight:750;letter-spacing:-.015em;color:var(--navy-ink);white-space:nowrap;line-height:1.2}
+.sec .sub{font-size:12.5px;color:var(--muted);margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtools{display:flex;gap:6px;align-items:center;flex:none}
+.rtools .seg button{padding:4px 8px}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ink-2);background:var(--seg);border-radius:9px;padding:5px 9px 5px 7px;cursor:pointer;user-select:none}
+.chk input{accent-color:var(--navy);width:14px;height:14px}
+.kpi{display:flex;align-items:baseline;gap:10px;margin-top:14px;min-width:0;white-space:nowrap;min-height:34px}
+.kv{font-size:32px;font-weight:750;letter-spacing:-.025em;line-height:1;color:var(--navy-ink)}
+.delta{font-size:12.5px;font-weight:650;padding:3px 8px;border-radius:999px;flex:none}
+.delta.good{color:var(--good);background:var(--good-bg)}
+.delta.crit{color:var(--crit);background:var(--crit-bg)}
+.delta.neu{color:var(--ink-2);background:var(--card-2);box-shadow:inset 0 0 0 1px var(--line)}
+.kctx{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;min-width:0}
+.legend{display:flex;gap:13px;font-size:12px;color:var(--ink-2);margin-top:10px;flex-wrap:nowrap;white-space:nowrap;overflow:hidden;min-height:16px}
+.lg{display:inline-flex;align-items:center;gap:6px}
+.lg .k{display:inline-block;flex:none}
+.k.line{width:16px;border-top:2.5px solid var(--kc)}
+.k.dash{width:16px;border-top:2.5px dashed var(--muted)}
+.k.swatch{width:14px;height:10px;border-radius:3px;background:var(--kc)}
+.k.region{width:14px;height:10px;border-radius:3px;background:var(--mat-bg);box-shadow:inset 0 0 0 1px var(--line-2)}
+.k.candle{width:10px;height:12px;border-radius:2px;background:var(--band-dem);box-shadow:inset 0 0 0 1px var(--c-dem)}
+.k.dot{width:9px;height:9px;border-radius:50%;background:var(--kc)}
+.k.nc{width:10px;height:14px;position:relative;background:linear-gradient(90deg,transparent 4px,var(--ink-2) 4px,var(--ink-2) 6px,transparent 6px)}
+.k.nc::after{content:'';position:absolute;left:1px;top:3px;width:8px;height:8px;border-radius:50%;box-sizing:border-box;border:2px solid var(--ink-2);background:var(--card)}
+.k.grad{width:60px;height:10px;border-radius:3px;background:linear-gradient(90deg,var(--g0),var(--g1))}
+.plot{flex:1;min-height:0;position:relative;margin-top:6px}
+.plot svg{position:absolute;inset:0;overflow:visible;display:block}
+.sec-ctl{display:flex;gap:8px;align-items:center;margin-top:8px;min-height:32px}
+.sec-ctl .seg button{font-size:12.5px;padding:5px 11px}
+.note{font-size:12px;color:var(--muted);line-height:1.35}
+.empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;border:1.5px dashed var(--line-2);border-radius:14px;padding:24px}
+.empty[hidden]{display:none}
+.empty .e-t{font-size:16px;font-weight:700;color:var(--navy-ink)}
+.empty .e-s{font-size:13px;color:var(--muted)}
+.empty .e-b{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.empty .e-b button{font-size:13px;font-weight:600;padding:7px 12px;border-radius:9px;background:var(--navy-soft);color:var(--navy-ink);border:1px solid var(--line-2)}
+.empty .e-b button:hover{background:var(--navy);color:#fff}
+
+/* takeaway escrito abaixo de cada gráfico */
+.tkb{margin-top:14px;height:146px;flex:none;border-radius:14px;background:var(--tk-bg);padding:14px 18px 14px 21px;position:relative;overflow:hidden;animation:fade .4s ease-out}
+.tkb::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--sevc,var(--ai))}
+.tkb.crit{--sevc:var(--crit)} .tkb.warn{--sevc:#e0a000} .tkb.info{--sevc:var(--info)} .tkb.good{--sevc:var(--good)}
+.tkb .hd{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--ai)}
+.tkb .hd .sev{font-size:10.5px;letter-spacing:.02em}
+.tkb .t{font-size:17px;font-weight:750;letter-spacing:-.012em;line-height:1.3;color:var(--navy-ink);margin-top:8px}
+.tkb .b{font-size:14px;line-height:1.46;color:var(--ink-2);margin-top:6px}
+.tkb .b b{color:var(--ink);font-weight:650}
+.tkb.empty2{background:transparent;border:1.5px dashed var(--line-2);display:flex;flex-direction:column;justify-content:center;gap:8px;padding:12px 14px}
+.tkb.empty2::before{display:none}
+.tkb.empty2 .msg{font-size:12.5px;color:var(--muted);padding-left:6px}
+.sg{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:6px 8px;border-radius:9px;font-size:13px;font-weight:600;color:var(--ink)}
+.sg:hover{background:var(--card-2)}
+.sg .sev{font-size:10px}
+.sg .sgt{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sg .ar{color:var(--muted)}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* svg */
+svg text{font-family:Inter,system-ui,"Segoe UI",sans-serif}
+.endlbl{font-size:13px;font-weight:700;fill:var(--ink);font-variant-numeric:tabular-nums}
+.endlbl.proj{font-weight:500;fill:var(--ink-2)}
+.endlbl.ctrl{fill:var(--muted)}
+.reglbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;fill:var(--muted)}
+.gaplbl{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;fill:var(--c-dem);opacity:.75}
+.ann-t{font-size:12.5px;font-weight:600;fill:var(--ink)}
+.ann-s{fill:var(--ai);font-size:12.5px}
+.ref-t{font-size:11px;font-weight:650;paint-order:stroke;stroke:var(--card);stroke-width:4px;stroke-linejoin:round}
+.fl{font-size:12.5px;font-weight:700;fill:var(--ink);font-variant-numeric:tabular-nums}
+.fl2{font-size:11px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.tri-t{font-size:11px;font-variant-numeric:tabular-nums;font-weight:600}
+.tri-t.p{font-style:italic;font-weight:500}
+.tri-r{font-size:11.5px;fill:var(--ink-2);font-variant-numeric:tabular-nums}
+.tri-r.s{font-weight:700;fill:var(--navy-ink)}
+
+/* tooltip azul-escuro */
+.tip{position:absolute;pointer-events:none;z-index:40;background:var(--tip-bg);color:var(--tip-ink);border:1px solid rgba(255,255,255,.08);border-radius:12px;box-shadow:0 22px 44px -16px rgba(5,15,40,.55);padding:10px 12px 9px;min-width:200px;font-size:12.5px;opacity:0;transition:opacity .12s;white-space:nowrap}
+.tip .h{font-size:11px;font-weight:700;color:var(--tip-mut);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px;display:flex;justify-content:space-between;gap:14px}
+.tip .h .st{color:#fff}
+.tip .row{display:flex;align-items:center;gap:8px;margin-top:5px}
+.tip .k{width:14px;border-top:2.5px solid var(--kc);flex:none}
+.tip .k.d{border-top-style:dashed}
+.tip .k.b{height:9px;border:0;border-radius:2px;background:var(--kc)}
+.tip .v{font-weight:700;font-variant-numeric:tabular-nums;color:#fff}
+.tip .n{color:#d6def0}
+.tip .ci{color:var(--tip-mut);font-size:11.5px;margin-left:auto;padding-left:12px;font-variant-numeric:tabular-nums}
+
+.foot{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);gap:20px;white-space:nowrap}
+.foot kbd{font:inherit;font-size:10.5px;font-weight:650;padding:1px 5px;border-radius:4px;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);margin:0 2px}
+#err{position:fixed;left:8px;bottom:8px;max-width:60vw;font:12px monospace;color:#b00;background:#fff;padding:6px 8px;border-radius:6px;display:none;z-index:999}
+</style>
+</head>
+<body>
+<div id="stage">
+  <header class="band">
+    <div class="ttl">
+      <div class="eyebrow"><i></i>Crédito PF · Resultados da área · Realizado até Set/26</div>
+      <h1>Dashboard <span>—</span> Autorizador Crédito PF</h1>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div class="tk">
+      <button class="tk-btn" id="tkBtn" type="button" aria-haspopup="true">
+        <span class="spark">✦</span>
+        <span class="tx"><span class="t1">Principais takeaways · IA</span><span class="t2" id="tkLbl">Visões sugeridas</span></span>
+        <span class="badge" id="tkCnt">6</span>
+      </button>
+      <div class="pop tk-menu" id="tkMenu"></div>
+    </div>
+  </header>
+
+  <div class="body">
+    <div class="bar">
+      <div class="view" id="view"></div>
+      <div class="ctrls">
+        <div class="ctl"><label class="sw"><input type="checkbox" id="swProj" checked><span></span></label><span>Projeções</span>
+          <div class="seg" data-k="hor"><button data-v="3">3 m</button><button data-v="6">6 m</button></div></div>
+        <div class="ctl"><label class="sw"><input type="checkbox" id="swBoot"><span></span></label><span>Bootstrap · IC</span>
+          <div class="seg" data-k="conf"><button data-v="80">80%</button><button data-v="90">90%</button><button data-v="95">95%</button></div></div>
+        <div class="ctl" id="ctlCmp" title="Compara a política filtrada com as demais em Demanda e Rentabilidade"><label class="sw"><input type="checkbox" id="swCmp" checked><span></span></label><span>Ação × controle</span></div>
+        <div class="ctl" id="ctlAnn"><label class="sw"><input type="checkbox" id="swAnn" checked><span></span></label><span>Anotações IA</span></div>
+        <div class="ctl"><button class="ib" id="btnTheme" type="button" title="Tema claro/escuro (T)">◐</button><button class="ib" id="btnFull" type="button" title="Tela cheia (F)">⤢</button></div>
+      </div>
+    </div>
+
+    <main class="board">
+      <section class="sec" id="c1">
+        <div class="sec-hd"><div class="sec-tt"><span class="num">01</span><div class="tt"><h2>Demanda × Faturamento</h2><p class="sub" data-sub></p></div></div></div>
+        <div class="kpi"></div><div class="legend"></div><div class="plot"></div>
+        <div class="sec-ctl"><div class="seg" data-k="c1"><button data-v="vol">R$ total</button><button data-v="cli">R$ por cliente</button><button data-v="apr">% aprovação</button></div></div>
+        <div class="tkb"></div>
+      </section>
+
+      <section class="sec" id="risk">
+        <div class="sec-hd"><div class="sec-tt"><span class="num">02</span><div class="tt"><h2>Risco de Crédito</h2><p class="sub" data-sub></p></div></div>
+          <div class="seg" data-k="risk"><button data-v="an">Aprov. × Neg.</button><button data-v="ac">Ação × Controle</button><button data-v="prev">Previsibilidade</button></div></div>
+        <div class="kpi"></div><div class="legend"></div>
+        <div class="plot"><div class="empty" hidden>
+          <div class="e-t">Ação × Controle compara uma política com as demais</div>
+          <div class="e-s">Escolha a política em Cálculo cliente ou clique em um piloto:</div>
+          <div class="e-b"><button type="button" data-pol="Hiperpersonalização">Hiperpersonalização</button><button type="button" data-pol="Otimizado">Otimizado</button><button type="button" data-pol="MOB curto">MOB curto</button><button type="button" data-pol="Gamification">Gamification</button></div>
+        </div></div>
+        <div class="sec-ctl">
+          <div class="seg" data-k="rmet"><button data-v="o30">Over30 · MOB3</button><button data-v="o90">Over90 · MOB6</button></div>
+          <div class="seg" data-k="rpop"><button data-v="ap">Aprovados</button><button data-v="ng">Negados</button></div>
+          <span class="note" id="riskNote"></span>
+        </div>
+        <div class="tkb"></div>
+      </section>
+
+      <section class="sec" id="rent">
+        <div class="sec-hd"><div class="sec-tt"><span class="num">03</span><div class="tt"><h2>Rentabilidade</h2><p class="sub" data-sub></p></div></div>
+          <div class="rtools">
+            <div class="seg" data-k="rview"><button data-v="curva">Curva</button><button data-v="tri">Triângulo</button></div>
+            <div class="seg" data-k="rmode"><button data-v="acum">Acum.</button><button data-v="mes">Mensal</button></div>
+            <label class="chk"><input type="checkbox" id="chkSaf">Safras</label>
+          </div></div>
+        <div class="kpi"></div><div class="legend"></div><div class="plot"></div>
+        <div class="sec-ctl"><div class="seg" data-k="rm"><button data-v="ccpb">CC/PB</button><button data-v="ccsaldo">CC/Saldo</button><button data-v="pbsaldo">PB/Saldo</button><button data-v="mrg">(PB−CC)/Saldo</button></div></div>
+        <div class="tkb"></div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span>Dados fictícios para prototipação · CC = custo de crédito · PB = produto bancário · Inadimplência exige maturação: Over5 MOB0 → Over15 MOB1 → Over30 MOB2 → Over30 MOB3</span>
+      <span>Atalhos: <kbd>←</kbd><kbd>→</kbd> visões sugeridas · <kbd>0</kbd> visão geral · <kbd>P</kbd> projeções · <kbd>B</kbd> bootstrap · <kbd>F</kbd> tela cheia</span>
+    </footer>
+  </div>
+</div>
+<div id="err"></div>
+
+<script>
+window.addEventListener('error', e => { const el = document.getElementById('err'); el.style.display = 'block'; el.textContent = 'Erro: ' + e.message + ' @' + e.lineno; });
+</script>
+<script>
+(function () {
+'use strict';
+
+/* =====================================================================
+   1. UTILITÁRIOS
+   ===================================================================== */
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const sum = (a, f = x => x) => a.reduce((s, x) => s + f(x), 0);
+const mean = (a, f = x => x) => a.length ? sum(a, f) / a.length : NaN;
+const cum = a => { let s = 0; return a.map(x => (s += x)); };
+const range = (a, b) => Array.from({ length: Math.max(0, b - a) }, (_, i) => a + i);
+function hashStr(s) { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed) { let a = seed >>> 0; return function () { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function gauss(r) { let u = 0, v = 0; while (u === 0) u = r(); while (v === 0) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+function quant(sorted, p) { if (!sorted.length) return NaN; const i = (sorted.length - 1) * p, lo = Math.floor(i), hi = Math.ceil(i); return sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo); }
+const Z = { 80: 1.2816, 90: 1.6449, 95: 1.96 };
+
+const NFc = {};
+const NF = d => NFc[d] || (NFc[d] = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+const sg = v => v > 0 ? '+' : v < 0 ? '−' : '±';
+const fm = {
+  brl(v) { const a = Math.abs(v); if (a >= 1e9) return 'R$ ' + NF(1).format(v / 1e9) + ' bi'; if (a >= 1e6) return 'R$ ' + NF(a >= 1e8 ? 0 : 1).format(v / 1e6) + ' mi'; return 'R$ ' + NF(0).format(v); },
+  pct(v, d = 1) { return NF(d).format(v * 100) + '%'; },
+  pp(v, d) { if (d == null) d = Math.abs(v) < 0.002 ? 2 : 1; return sg(v) + NF(d).format(Math.abs(v * 100)) + ' p.p.'; },
+  spct(v, d = 1) { return sg(v) + NF(d).format(Math.abs(v * 100)) + '%'; },
+  x(v, d = 1) { return NF(d).format(v) + '×'; },
+};
+
+/* =====================================================================
+   2. DIMENSÕES, CALENDÁRIO E CENÁRIOS (dados fictícios)
+   ===================================================================== */
+const MES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const MONTHS = Array.from({ length: 24 }, (_, i) => { const m = (3 + i) % 12, y = 25 + Math.floor((3 + i) / 12); return { i, m, y, label: MES[m] + '/' + y }; });
+const T_REAL = 17;                 // Set/26 = último mês fechado
+const MAT = { o30: 3, o90: 6 };    // meses de maturação
+const R30 = T_REAL - MAT.o30, R90 = T_REAL - MAT.o90;
+const SEASON = [.93, .90, .98, .97, 1.0, .98, 1.0, 1.01, .99, 1.02, 1.10, 1.16];
+const BASE = { cli: 9.8e6, dpc: 1450, apr: .78, o30: .034, n30: .096, pb0: .0205, cc0: .0066 };
+const CC_SHAPE = [1.55, .85, .85, .95, 1.05, 1.1, 1.05, .95, .85, .75, .65, .55];
+const LAM = 0.85;                  // peso de recência das safras (mais novas pesam mais)
+// Escada de indicadores antecedentes até o Over30 MOB3
+const LAD = [
+  { mob: 0, lab: 'Over5', r: 1.80, sd: .11 },
+  { mob: 1, lab: 'Over15', r: 1.25, sd: .06 },
+  { mob: 2, lab: 'Over30', r: .88, sd: .025 },
+];
+
+// share = participação na base · tkt = ticket por cliente · apr = deslocamento da taxa de aprovação
+// pd/pdn = multiplicador de inadimplência (aprovados/negados) · pb = multiplicador de PB/Saldo
+const DIMS = [
+  { key: 'renda', label: 'Faixa de renda', all: 'Todas', short: 'Renda', opts: [
+    { id: 'Até R$ 3 mil', share: .34, tkt: .55, apr: -.06, pd: 1.45, pdn: 1.20, pb: 1.15 },
+    { id: 'R$ 3–8 mil', share: .33, tkt: .90, apr: -.01, pd: 1.05, pdn: 1.05, pb: 1.03 },
+    { id: 'R$ 8–20 mil', share: .21, tkt: 1.35, apr: .03, pd: .78, pdn: .90, pb: .92 },
+    { id: 'Alta renda (+R$ 20 mil)', share: .12, tkt: 2.30, apr: .06, pd: .55, pdn: .70, pb: .82 }] },
+  { key: 'score', label: 'Score de risco', all: 'Todos', short: 'Score', opts: [
+    { id: 'Baixo', share: .45, tkt: 1.10, apr: .07, pd: .45, pdn: .55, pb: .92 },
+    { id: 'Médio', share: .38, tkt: 1.00, apr: -.02, pd: 1.15, pdn: 1.00, pb: 1.05 },
+    { id: 'Alto', share: .17, tkt: .80, apr: -.20, pd: 2.60, pdn: 1.70, pb: 1.18 }] },
+  { key: 'persona', label: 'Persona', all: 'Todas', short: 'Persona', opts: [
+    { id: 'Jovem digital', share: .24, tkt: .70, apr: -.03, pd: 1.25, pdn: 1.10, pb: 1.08 },
+    { id: 'Família', share: .30, tkt: 1.00, apr: 0, pd: 1.00, pdn: 1.00, pb: 1.00 },
+    { id: 'Profissional liberal', share: .16, tkt: 1.30, apr: .01, pd: .95, pdn: .95, pb: 1.00 },
+    { id: 'Investidor', share: .12, tkt: 1.60, apr: .05, pd: .60, pdn: .75, pb: .90 },
+    { id: 'Sênior', share: .18, tkt: .85, apr: .02, pd: .85, pdn: .90, pb: .97 }] },
+  { key: 'demanda', label: 'Demanda', all: 'Todas', short: 'Demanda', opts: [
+    { id: 'Dentro do cartão', share: .62, tkt: .80, apr: .15, pd: .80, pdn: .80, pb: .95 },
+    { id: 'Limite cliente', share: .20, tkt: 1.30, apr: -.08, pd: 1.20, pdn: 1.05, pb: 1.08 },
+    { id: 'Poder de compra', share: .12, tkt: 1.60, apr: -.30, pd: 1.50, pdn: 1.20, pb: 1.15 },
+    { id: 'Acima do poder de compra', share: .06, tkt: 2.00, apr: -.50, pd: 2.40, pdn: 1.60, pb: 1.22 }] },
+  { key: 'cliente', label: 'Cálculo cliente', all: 'Todos', short: 'Cálc. cliente', opts: [
+    { id: 'No-action', share: .10, tkt: .90, apr: -.04, pd: 1.05, pdn: 1.00, pb: 1.00 },
+    { id: 'BAU', share: .50, tkt: 1.00, apr: 0, pd: 1.00, pdn: 1.00, pb: 1.00 },
+    { id: 'Hiperpersonalização', share: .12, tkt: 1.00, apr: 0, pd: 1.00, pdn: 1.00, pb: 1.00, pilot: { start: 9, apr: .045, tkt: .065, pd: .985, pdn: 1.13, pb: 1.04 } },
+    { id: 'Otimizado', share: .10, tkt: 1.00, apr: 0, pd: 1.00, pdn: 1.00, pb: 1.00, pilot: { start: 7, apr: .025, tkt: .02, pd: .92, pdn: 1.08, pb: 1.01 } },
+    { id: 'Alto Risco', share: .07, tkt: .85, apr: -.15, pd: 1.90, pdn: 1.40, pb: 1.12 },
+    { id: 'MOB curto', share: .06, tkt: .80, apr: -.02, pd: 1.08, pdn: 1.05, pb: 1.03, pilot: { start: 10, apr: .035, tkt: .03, pd: 1.24, pdn: 1.0, pb: 1.03 } },
+    { id: 'Gamification', share: .05, tkt: 1.00, apr: 0, pd: 1.00, pdn: 1.00, pb: 1.00, pilot: { start: 11, apr: .005, tkt: .09, pd: 1.02, pdn: 1.00, pb: 1.02 } }] },
+  { key: 'trans', label: 'Cálculo transacional', all: 'Todos', short: 'Cálc. transac.', opts: [
+    { id: 'Baixo Risco', share: .55, tkt: 1.00, apr: .10, pd: .60, pdn: .45, pb: .96 },
+    { id: 'Médio Risco', share: .32, tkt: 1.00, apr: -.05, pd: 1.15, pdn: 1.00, pb: 1.03 },
+    { id: 'Alto Risco', share: .13, tkt: 1.00, apr: -.35, pd: 2.30, pdn: 1.80, pb: 1.10 }] },
+];
+const DIM = Object.fromEntries(DIMS.map(d => [d.key, d]));
+
+// Interações "escondidas" nos dados — são elas que a IA encontra e vira takeaway
+const SCEN = [
+  { cond: { score: ['Médio'], renda: ['Alta renda (+R$ 20 mil)'], demanda: ['Limite cliente'] },
+    fx: t => ({ pd: 1 + 0.95 * clamp((t - 10) / 5, 0, 1.3), tktG: 0.016 * Math.max(0, t - 5) }) },
+  { cond: { trans: ['Baixo Risco'], demanda: ['Poder de compra'] },
+    fx: () => ({ pdn: 0.42, apr: -0.05 }) },
+  { cond: { demanda: ['Acima do poder de compra'] },
+    fx: t => ({ tktG: 0.022 * Math.max(0, t - 4), apr: -0.006 * Math.max(0, t - 4), pd: 1 + 0.01 * Math.max(0, t - 4) }) },
+  // piora recente: só aparece nos indicadores antecedentes (safras ainda não maduras)
+  { cond: { persona: ['Jovem digital'] },
+    fx: t => ({ pd: 1 + 0.42 * clamp((t - 14) / 3, 0, 1.6) }) },
+];
+
+/* =====================================================================
+   3. MODELO
+   ===================================================================== */
+const EMPTY = () => Object.fromEntries(DIMS.map(d => [d.key, []]));
+function normF(F) { const o = {}; for (const d of DIMS) { const s = (F[d.key] || []).filter(x => d.opts.some(o2 => o2.id === x)); o[d.key] = (s.length === 0 || s.length === d.opts.length) ? [] : d.opts.map(o2 => o2.id).filter(id => s.includes(id)); } return o; }
+const fkey = F => { const n = normF(F); return DIMS.map(d => n[d.key].join(',')).join('|'); };
+const sameF = (a, b) => fkey(a) === fkey(b);
+function selOpts(d, F) { const s = F[d.key] || []; return s.length ? d.opts.filter(o => s.includes(o.id)) : d.opts; }
+function wavg(arr, k) { return sum(arr, o => o.share * o[k]) / sum(arr, o => o.share); }
+
+function segParams(F) {
+  let share = 1, tkt = 1, apr = 0, pd = 1, pdn = 1, pb = 1; const pilots = [];
+  for (const d of DIMS) {
+    const sel = selOpts(d, F), all = d.opts;
+    share *= sum(sel, o => o.share) / sum(all, o => o.share);
+    tkt *= wavg(sel, 'tkt') / wavg(all, 'tkt');
+    apr += wavg(sel, 'apr') - wavg(all, 'apr');
+    pd *= wavg(sel, 'pd') / wavg(all, 'pd');
+    pdn *= wavg(sel, 'pdn') / wavg(all, 'pdn');
+    pb *= wavg(sel, 'pb') / wavg(all, 'pb');
+    if (d.key === 'cliente') { const S = sum(sel, o => o.share); sel.forEach(o => { if (o.pilot) pilots.push({ p: o.pilot, w: o.share / S }); }); }
+  }
+  const scen = [];
+  for (const sc of SCEN) {
+    let w = 1;
+    for (const [k, ids] of Object.entries(sc.cond)) { const sel = selOpts(DIM[k], F); w *= sum(sel.filter(o => ids.includes(o.id)), o => o.share) / sum(sel, o => o.share); }
+    if (w > 0) scen.push({ sc, w });
+  }
+  return { share, tkt, apr, pd, pdn, pb, pilots, scen };
+}
+
+function effectsAt(P, t) {
+  let pdM = 1, pdnM = 1, aprA = 0, tktG = 0, pbM = 1;
+  for (const { p, w } of P.pilots) { const r = clamp((t - p.start + 1) / 3, 0, 1); pdM *= 1 + w * r * (p.pd - 1); pdnM *= 1 + w * r * (p.pdn - 1); aprA += w * r * p.apr; tktG += w * r * p.tkt; pbM *= 1 + w * r * (p.pb - 1); }
+  for (const { sc, w } of P.scen) { const e = sc.fx(t); pdM *= 1 + w * ((e.pd ?? 1) - 1); pdnM *= 1 + w * ((e.pdn ?? 1) - 1); aprA += w * (e.apr || 0); tktG += w * (e.tktG || 0); }
+  return { pdM, pdnM, aprA, tktG, pbM };
+}
+
+function genSeries(P, key) {
+  const r = rng(hashStr('S|' + key));
+  const ns = Math.min(Math.pow(1 / Math.max(P.share, 1e-4), 0.35), 3.5);   // segmentos menores = mais ruído
+  const sd = { vol: 0.006 * ns, apr: 0.0026 * ns, pd: 0.0095 * ns };
+  const out = [];
+  for (let t = 0; t < 24; t++) {
+    const m = MONTHS[t].m, e = effectsAt(P, t);
+    const macro = 1 + 0.06 * Math.sin((t + 3) / 12 * Math.PI);
+    const cli = BASE.cli * P.share * (1 + 0.005 * t);
+    const dpcE = BASE.dpc * P.tkt * SEASON[m] * (1 + 0.0035 * t) * (1 + e.tktG);
+    const aprE = clamp(BASE.apr + P.apr + e.aprA - (m === 11 ? 0.012 : 0) - 0.0005 * t, 0.05, 0.985);
+    const o30E = BASE.o30 * P.pd * e.pdM * macro;
+    const n30E = BASE.n30 * P.pdn * e.pdnM * macro;
+    const dpc = dpcE * (1 + sd.vol * gauss(r)), apr = clamp(aprE + sd.apr * gauss(r), 0.03, 0.99);
+    const o30 = o30E * (1 + sd.pd * gauss(r)), n30 = n30E * (1 + sd.pd * gauss(r));
+    const o90 = o30 * 0.62 * (1 + 0.5 * sd.pd * gauss(r)), n90 = n30 * 0.71 * (1 + 0.5 * sd.pd * gauss(r));
+    const mk = (dpc, apr, o30, n30, o90, n90) => ({ dpc, fpc: dpc * apr, dem: cli * dpc, fat: cli * dpc * apr, apr, o30, o90, n30, n90 });
+    out.push({ t, cli, r: mk(dpc, apr, o30, n30, o90, n90), e: mk(dpcE, aprE, o30E, n30E, o30E * 0.62, n30E * 0.71), sd });
+  }
+  return out;
+}
+
+// Indicadores antecedentes por safra + fator de calibração estimado nas safras maduras
+const LAD_CACHE = new Map();
+function ladder(gen, key, seedKey) {
+  const ck = seedKey + '|' + key; if (LAD_CACHE.has(ck)) return LAD_CACHE.get(ck);
+  const r = rng(hashStr('L|' + ck));
+  const F = gen.map(g => g.r[key]);                                   // Over30 MOB3 "verdadeiro" (só observado até Jun/26)
+  const raw = F.map(f => LAD.map(L => f * L.r * Math.exp(L.sd * clamp(gauss(r), -2.2, 2.2))));
+  const hist = range(0, R30 + 1);
+  const rhat = LAD.map((L, k) => sum(hist, t => raw[t][k]) / sum(hist, t => F[t]));
+  const est = raw.map(rw => rw.map((x, k) => x / rhat[k]));
+  const sig = LAD.map((L, k) => { const e = hist.map(t => Math.log(F[t] / est[t][k])), mu = mean(e); return Math.sqrt(mean(e, x => (x - mu) ** 2)); });
+  const res = { F, raw, rhat, est, sig };
+  LAD_CACHE.set(ck, res); return res;
+}
+// Estimativa das safras em maturação (o "nowcast")
+function nowcast(gen, key, seedKey) {
+  const is30 = key.endsWith('30'), R = T_REAL - (is30 ? 3 : 6), out = [];
+  if (is30) {
+    const L = ladder(gen, key, seedKey);
+    for (let t = R + 1; t <= T_REAL; t++) { const st = T_REAL - t; out.push({ t, v: L.est[t][st], se: L.sig[st], stage: st, raw: L.raw[t][st] }); }
+  } else {
+    const r = rng(hashStr('N9|' + seedKey + key));
+    for (let t = R + 1; t <= T_REAL; t++) { const m = T_REAL - t, se = 0.024 + 0.006 * (5 - m); out.push({ t, v: gen[t].r[key] * (1 + se * 0.7 * gauss(r)), se, stage: m }); }
+  }
+  return out;
+}
+
+// Safras: Set/25 (s=0, 12 MOBs observados) ... Ago/26 (s=11, 1 MOB observado)
+function genRent(P, key, gen) {
+  const r = rng(hashStr('R|' + key));
+  const pdRef = BASE.o30 * P.pd;
+  const out = [];
+  for (let s = 0; s < 12; s++) {
+    const t0 = 5 + s, e = effectsAt(P, t0);
+    const ccMult = Math.pow(gen[t0].e.o30 / pdRef, 1.1) * (1 + 0.05 * gauss(r));
+    const pbMult = e.pbM * (1 + 0.025 * gauss(r));
+    const pbm = [], ccm = [];
+    for (let k = 0; k < 12; k++) {
+      pbm.push(BASE.pb0 * P.pb * pbMult * Math.pow(0.94, k) * (1 + 0.03 * gauss(r)));
+      ccm.push(BASE.cc0 * Math.pow(P.pd, 0.85) * ccMult * CC_SHAPE[k] * (1 + 0.07 * gauss(r)));
+    }
+    out.push({ s, t0, label: MONTHS[t0].label, w: gen[t0].r.fat, nObs: 12 - s, pbc: cum(pbm), ccc: cum(ccm) });
+  }
+  return out;
+}
+
+const RMET = {
+  ccpb: { label: 'CC/PB', long: 'Custo de crédito ÷ produto bancário', better: -1, f: (pb, cc) => cc / pb },
+  ccsaldo: { label: 'CC/Saldo', long: 'Custo de crédito ÷ saldo da safra', better: -1, f: (pb, cc) => cc },
+  pbsaldo: { label: 'PB/Saldo', long: 'Produto bancário ÷ saldo da safra', better: 1, f: (pb) => pb },
+  mrg: { label: '(PB−CC)/Saldo', long: 'Margem após custo de crédito ÷ saldo', better: 1, f: (pb, cc) => pb - cc },
+};
+
+function devFactors(saf, idx) {
+  const f = { pb: new Array(11).fill(null), cc: new Array(11).fill(null) };
+  for (let k = 0; k < 11; k++) {
+    let np = 0, dp = 0, nc = 0, dc = 0;
+    for (const i of idx) { const s = saf[i]; if (s.nObs >= k + 2) { const w = s.w * Math.pow(LAM, 11 - s.s); np += w * s.pbc[k + 1]; dp += w * s.pbc[k]; nc += w * s.ccc[k + 1]; dc += w * s.ccc[k]; } }
+    if (dp > 0) { f.pb[k] = np / dp; f.cc[k] = nc / dc; }
+  }
+  return f;
+}
+function completeTri(saf, f, f0) {
+  return saf.map(s => { const pb = s.pbc.slice(), cc = s.ccc.slice(); for (let k = s.nObs; k < 12; k++) { pb[k] = pb[k - 1] * (f.pb[k - 1] ?? f0.pb[k - 1]); cc[k] = cc[k - 1] * (f.cc[k - 1] ?? f0.cc[k - 1]); } return { pb, cc }; });
+}
+const mval = (arr, k, mode) => mode === 'acum' ? arr[k] : arr[k] - (k ? arr[k - 1] : 0);
+function aggCurve(saf, comp, idx, M, mode) {
+  const out = [];
+  for (let k = 0; k < 12; k++) {
+    let W = 0, PB = 0, CC = 0;
+    for (const i of idx) { const s = saf[i], c = comp[i], w = s.w * Math.pow(LAM, 11 - s.s); W += w; PB += w * mval(c.pb, k, mode); CC += w * mval(c.cc, k, mode); }
+    out.push(M.f(PB / W, CC / W));
+  }
+  return out;
+}
+// "Mais provável": chain-ladder ponderado por recência + bootstrap reamostrando safras
+const RS_CACHE = new Map();
+function rentStats(saf, metric, mode, conf, seedKey, boot = true) {
+  const ck = [seedKey, metric, mode, conf, boot].join('#');
+  if (RS_CACHE.has(ck)) return RS_CACHE.get(ck);
+  const M = RMET[metric], all = saf.map((_, i) => i);
+  const f0 = devFactors(saf, all), comp0 = completeTri(saf, f0, f0);
+  const mp = aggCurve(saf, comp0, all, M, mode);
+  let lo = null, hi = null;
+  if (boot) {
+    const r = rng(hashStr('B|' + seedKey + metric + mode)), B = 400, curves = [];
+    for (let b = 0; b < B; b++) { const idx = all.map(() => Math.floor(r() * saf.length)); const f = devFactors(saf, idx); curves.push(aggCurve(saf, completeTri(saf, f, f0), idx, M, mode)); }
+    const a = (1 - conf / 100) / 2; lo = []; hi = [];
+    for (let k = 0; k < 12; k++) { const col = curves.map(c => c[k]).sort((p, q) => p - q); lo.push(quant(col, a)); hi.push(quant(col, 1 - a)); }
+  }
+  const obs = [];
+  for (let k = 0; k < 12; k++) {
+    const S = saf.filter(s => s.nObs > k);
+    const vals = S.map(s => ({ s: s.s, label: s.label, v: M.f(mval(s.pbc, k, mode), mval(s.ccc, k, mode)) }));
+    const sv = vals.map(d => d.v).sort((p, q) => p - q);
+    const Wt = sum(S, s => s.w);
+    const PB = sum(S, s => s.w * mval(s.pbc, k, mode)) / Wt, CC = sum(S, s => s.w * mval(s.ccc, k, mode)) / Wt;
+    obs.push({ k: k + 1, n: S.length, mean: M.f(PB, CC), min: sv[0], q1: quant(sv, .25), med: quant(sv, .5), q3: quant(sv, .75), max: sv[sv.length - 1], first: S[0].label, last: S[S.length - 1].label, vals });
+  }
+  const tri = saf.map((s, i) => ({ s: s.s, label: s.label, nObs: s.nObs, cells: Array.from({ length: 12 }, (_, k) => ({ k: k + 1, v: M.f(mval(comp0[i].pb, k, mode), mval(comp0[i].cc, k, mode)), proj: k >= s.nObs })) }));
+  const res = { M, mp, lo, hi, obs, tri };
+  RS_CACHE.set(ck, res);
+  return res;
+}
+
+function bootMean(arr, conf, seed, B = 2000) {
+  const r = rng(seed), n = arr.length, ms = [];
+  for (let b = 0; b < B; b++) { let s = 0; for (let i = 0; i < n; i++) s += arr[Math.floor(r() * n)]; ms.push(s / n); }
+  ms.sort((p, q) => p - q); const a = (1 - conf / 100) / 2;
+  return { mean: mean(arr), lo: quant(ms, a), hi: quant(ms, 1 - a) };
+}
+function bootDiff2(a, b, conf, seed, B = 2000) {
+  const r = rng(seed), d = [];
+  for (let i = 0; i < B; i++) { let sa = 0, sb = 0; for (let j = 0; j < a.length; j++) sa += a[Math.floor(r() * a.length)]; for (let j = 0; j < b.length; j++) sb += b[Math.floor(r() * b.length)]; d.push(sa / a.length - sb / b.length); }
+  d.sort((p, q) => p - q); const al = (1 - conf / 100) / 2;
+  return { est: mean(a) - mean(b), lo: quant(d, al), hi: quant(d, 1 - al) };
+}
+// Lift ação vs controle: diferença mensal pós-piloto, ajustada pela diferença pré-piloto (diff-in-diff)
+function liftStats(A, C, key, R, start, kind, conf, seed) {
+  const d = t => kind === 'rel' ? A[t].r[key] / C[t].r[key] - 1 : A[t].r[key] - C[t].r[key];
+  const post = [], pre = [];
+  if (start != null) { for (let t = 0; t <= R; t++) { if (t >= start + 2) post.push(d(t)); else if (t < start) pre.push(d(t)); } }
+  else for (let t = R - 5; t <= R; t++) post.push(d(t));
+  if (post.length < 2) { post.length = 0; for (let t = Math.max(0, R - 2); t <= R; t++) post.push(d(t)); }
+  const adj = pre.length ? mean(pre) : 0;
+  const bs = bootMean(post.map(x => x - adj), conf, seed);
+  return { ...bs, n: post.length, did: pre.length > 0, sig: bs.lo > 0 || bs.hi < 0 };
+}
+
+const VIEW_CACHE = new Map();
+function computeView(F) {
+  const key = fkey(F);
+  if (VIEW_CACHE.has(key)) return VIEW_CACHE.get(key);
+  const P = segParams(F), A = genSeries(P, key);
+  const cliSel = normF(F).cliente;
+  const hasPolicy = cliSel.length > 0;
+  const pilots = cliSel.map(id => DIM.cliente.opts.find(o => o.id === id)).filter(o => o.pilot);
+  const isPilot = hasPolicy && pilots.length === cliSel.length;
+  const start = isPilot ? Math.min(...pilots.map(o => o.pilot.start)) : null;
+  let C = null, safC = null, keyC = null;
+  if (hasPolicy) {
+    const FC = { ...F, cliente: DIM.cliente.opts.map(o => o.id).filter(id => !cliSel.includes(id)) };
+    keyC = fkey(FC); const PC = segParams(FC); C = genSeries(PC, keyC); safC = genRent(PC, keyC, C);
+  }
+  const V = { F, key, keyC, P, A, C, hasPolicy, isPilot, start, saf: genRent(P, key, A), safC,
+    labA: isPilot ? 'Ação' : 'Seleção', labC: isPilot ? 'Controle' : 'Demais políticas' };
+  VIEW_CACHE.set(key, V);
+  return V;
+}
+const rv = (gen, key, t) => gen[t].r[key];
+let TOTAL = null;
+const total = () => TOTAL || (TOTAL = computeView(EMPTY()));
+function ncSummary(V, conf = 90) {
+  const L = ladder(V.A, 'o30', V.key), z = Z[conf];
+  const set = L.est[T_REAL][0];
+  return { L, set, lo: set * (1 - z * L.sig[0]), hi: set * (1 + z * L.sig[0]), ago: L.est[T_REAL - 1][1], jul: L.est[T_REAL - 2][2], jun: L.F[R30], sig: L.sig };
+}
+
+/* =====================================================================
+   4. TAKEAWAYS DA IA (filtros + leitura calculada dos dados, por seção)
+   ===================================================================== */
+const KIND = {
+  alerta: { label: 'Alerta', icon: '▲', cls: 'crit' },
+  atencao: { label: 'Atenção', icon: '◆', cls: 'warn' },
+  oport: { label: 'Oportunidade', icon: '↗', cls: 'info' },
+  positivo: { label: 'Positivo', icon: '✓', cls: 'good' },
+};
+const whenAnO30 = s => s.risk === 'an' && s.rmet === 'o30';
+const TAKEAWAYS = [
+  { id: 'tk1', kind: 'alerta', focus: 'risk', short: 'Médio risco × alta renda no limite',
+    filters: { score: ['Médio'], renda: ['Alta renda (+R$ 20 mil)'], demanda: ['Limite cliente'] },
+    view: { c1: 'vol', risk: 'an', rmet: 'o30', rm: 'ccpb' },
+    build(V) {
+      const A = V.A, pre = A.slice(0, 10).map(g => g.r.o30);
+      const app = Math.ceil(mean(pre) * 1.25 * 1000) / 1000;
+      const a0 = rv(A, 'o30', 11), a1 = rv(A, 'o30', R30);
+      const fy = rv(A, 'fat', T_REAL) / rv(A, 'fat', T_REAL - 12) - 1, dy = rv(A, 'dem', T_REAL) / rv(A, 'dem', T_REAL - 12) - 1;
+      const n = mean(A.slice(9, R30 + 1), g => g.r.n30), nPrev = mean(A.slice(0, 9), g => g.r.n30);
+      const rs = rentStats(V.saf, 'ccpb', 'acum', 90, V.key), nc = ncSummary(V);
+      return {
+        key: fm.pp(a1 - a0),
+        headline: `Inadimplência dos aprovados subiu ${fm.pp(a1 - a0)} em 3 meses e passou do apetite, enquanto o faturamento cresce ${fm.spct(fy, 0)} a/a`,
+        action: 'reduzir em 10–15% o fator de limite transacional deste cluster e reavaliar após 2 safras.',
+        sec: {
+          c1: { t: `Faturamento ${fm.spct(fy, 0)} a/a, com o risco em alta`, b: `A demanda do cluster cresceu <b>${fm.spct(dy, 0)}</b> e a aprovação segue em <b>${fm.pct(rv(A, 'apr', T_REAL))}</b>: a exposição aumenta exatamente onde a inadimplência piora.` },
+          risk: { t: `Aprovados ${fm.pp(a1 - a0)} em 3 meses, acima do apetite`, b: `Over30 MOB3 foi de <b>${fm.pct(a0)}</b> para <b>${fm.pct(a1)}</b> (Mar→Jun/26) e os negados não subiram (${fm.pct(nPrev)} → ${fm.pct(n)}). Os antecedentes de Set/26 apontam <b>${fm.pct(nc.set)}</b>.` },
+          rent: { t: `CC/PB mais provável de ${fm.pct(rs.mp[11], 0)} em MOB12`, b: `As safras de 2026 puxam a estimativa para cima: a safra mais antiga fechou em <b>${fm.pct(rs.obs[11].mean)}</b>. A margem do cluster cai junto com a alta do custo de crédito.` },
+        },
+        ann: {
+          c1: [{ series: 'f', t: T_REAL, text: `Faturamento ${fm.spct(fy)} a/a`, when: s => s.c1 !== 'apr' }],
+          risk: [{ series: 'ap', t: R30, t0: 11, text: `${fm.pp(a1 - a0)} desde Mar/26, acima do apetite`, when: whenAnO30 }],
+        },
+        refs: { risk: [{ v: app, label: `Apetite ${fm.pct(app)}`, when: s => s.risk === 'prev' || whenAnO30(s) || (s.risk === 'ac' && s.rpop === 'ap' && s.rmet === 'o30') }] },
+      };
+    } },
+  { id: 'tk6', kind: 'alerta', focus: 'risk', short: 'Jovem digital: antecedentes em alta',
+    filters: { persona: ['Jovem digital'] },
+    view: { c1: 'vol', risk: 'prev', rmet: 'o30', rm: 'ccpb' },
+    build(V) {
+      const A = V.A, nc = ncSummary(V), fy = rv(A, 'fat', T_REAL) / rv(A, 'fat', T_REAL - 12) - 1;
+      const rs = rentStats(V.saf, 'ccpb', 'acum', 90, V.key);
+      const half1 = Z[90] * nc.sig[1] * nc.set;
+      const m1 = rs.obs[0].vals, newS = mean(m1.filter(v => v.s >= 10), v => v.v), oldS = mean(m1.filter(v => v.s < 10), v => v.v);
+      return {
+        key: fm.pct(nc.set),
+        headline: `Jovem digital: o realizado ainda não mostra, mas os antecedentes apontam Over30 MOB3 de ${fm.pct(nc.set)} em Set/26 (vs ${fm.pct(nc.jun)} em Jun/26)`,
+        action: 'revisar o score de entrada do Jovem digital antes do fechamento de Out/26 e acompanhar o Over15 MOB1.',
+        sec: {
+          c1: { t: `Faturamento ${fm.spct(fy, 0)} a/a, sem sinal de alerta`, b: `Aprovação de <b>${fm.pct(rv(A, 'apr', T_REAL))}</b> e demanda sem ruptura. Nada no volume antecipa a piora que os indicadores de risco já mostram.` },
+          risk: { t: `Set/26 deve fechar em ${fm.pct(nc.set)} (IC 90% ${fm.pct(nc.lo)}–${fm.pct(nc.hi)})`, b: `Jul, Ago e Set/26 sobem nos antecedentes (<b>${fm.pct(nc.jul)}</b>, <b>${fm.pct(nc.ago)}</b>, <b>${fm.pct(nc.set)}</b>) vs <b>${fm.pct(nc.jun)}</b> da última safra madura. Com o Over15 MOB1, o IC cai para ±${NF(1).format(half1 * 100)} p.p.` },
+          rent: { t: `Safras Jul–Ago/26 entram com CC/PB de ${fm.pct(newS, 0)} em MOB1`, b: `vs <b>${fm.pct(oldS)}</b> na média das safras anteriores: o custo de crédito já reage. A estimativa de MOB12 fica em <b>${fm.pct(rs.mp[11])}</b> e deve subir conforme essas safras amadurecem.` },
+        },
+        ann: {
+          risk: [{ fun: T_REAL, text: `Antecedentes apontam ${fm.pct(nc.set)} em Set/26`, when: s => s.risk === 'prev' },
+                 { series: 'ap', t: T_REAL, text: `Set/26 estimado em ${fm.pct(nc.set)}`, when: whenAnO30 }],
+        },
+      };
+    } },
+  { id: 'tk2', kind: 'positivo', focus: 'c1', short: 'Hiperpersonalização vs controle',
+    filters: { cliente: ['Hiperpersonalização'] },
+    view: { c1: 'cli', risk: 'ac', rpop: 'ap', rmet: 'o30', rm: 'mrg' },
+    build(V) {
+      const A = V.A, C = V.C, st = V.start;
+      const lf = liftStats(A, C, 'fpc', T_REAL, st, 'rel', 95, 11), la = liftStats(A, C, 'apr', T_REAL, st, 'abs', 95, 12);
+      const lp = liftStats(A, C, 'o30', R30, st, 'abs', 95, 13), ln = liftStats(A, C, 'n30', R30, st, 'abs', 95, 14);
+      const rs = rentStats(V.saf, 'mrg', 'acum', 90, V.key), rc = rentStats(V.safC, 'mrg', 'acum', 90, V.keyC, false);
+      return {
+        key: fm.spct(lf.mean),
+        headline: `Hiperpersonalização entrega ${fm.spct(lf.mean)} de faturamento por cliente vs controle, ${!lp.sig ? 'sem piorar a inadimplência' : lp.mean < 0 ? 'e ainda reduz a inadimplência' : `com leve alta de inadimplência (${fm.pp(lp.mean, 2)})`}`,
+        action: 'escalar de 12% para 30% da base elegível, mantendo 10% de holdout como controle.',
+        sec: {
+          c1: { t: `${fm.spct(lf.mean)} de faturamento por cliente vs controle`, b: `Diferença ajustada pelo pré-piloto (diff-in-diff), IC 95% de <b>${fm.spct(lf.lo)}</b> a <b>${fm.spct(lf.hi)}</b>. A aprovação subiu <b>${fm.pp(la.mean)}</b> no mesmo perfil de cliente.` },
+          risk: { t: !lp.sig ? 'Sem piora de inadimplência vs controle' : `Inadimplência ${fm.pp(lp.mean, 2)} vs controle`, b: `Aprovados com Δ <b>${fm.pp(lp.mean, 2)}</b> (IC 95% ${fm.pp(lp.lo, 2)} a ${fm.pp(lp.hi, 2)})${!lp.sig ? ', dentro do ruído' : ''}. Quem é negado tem inadimplência <b>${fm.pp(ln.mean)}</b> maior que no controle: o corte ficou mais preciso.` },
+          rent: { t: `Margem ${fm.pp(rs.mp[11] - rc.mp[11])} acima do controle em MOB12`, b: `(PB−CC)/Saldo mais provável de <b>${fm.pct(rs.mp[11])}</b> vs <b>${fm.pct(rc.mp[11])}</b> no controle: mais receita por cliente com o mesmo custo de crédito.` },
+        },
+        ann: {
+          c1: [{ series: 'f', t: T_REAL, text: `${fm.spct(lf.mean)} fat./cliente vs controle`, when: s => s.c1 === 'cli' }],
+          risk: [{ series: 'a', t: R30, text: `Δ ${fm.pp(lp.mean, 2)} · ${lp.sig ? 'significativo' : 'não significativo'}`, when: s => s.risk === 'ac' && s.rpop === 'ap' && s.rmet === 'o30' }],
+        },
+      };
+    } },
+  { id: 'tk3', kind: 'oport', focus: 'risk', short: 'Negados de baixo risco no poder de compra',
+    filters: { trans: ['Baixo Risco'], demanda: ['Poder de compra'] },
+    view: { c1: 'vol', risk: 'an', rmet: 'o30', rm: 'mrg' },
+    build(V) {
+      const A = V.A, n = rv(A, 'n30', R30), a = rv(A, 'o30', R30);
+      const neg = mean(A.slice(T_REAL - 2, T_REAL + 1), g => g.r.dem - g.r.fat), fat = mean(A.slice(T_REAL - 2, T_REAL + 1), g => g.r.fat);
+      const apr = rv(A, 'apr', T_REAL), inc = 0.3 * neg;
+      const T = total().A, tr = rv(T, 'n30', R30) / rv(T, 'o30', R30);
+      const dPd = (fat * a + inc * n * 1.15) / (fat + inc) - a;
+      const rs = rentStats(V.saf, 'mrg', 'acum', 90, V.key), rt = rentStats(total().saf, 'mrg', 'acum', 90, total().key, false);
+      return {
+        key: fm.pct(n),
+        headline: `Negados têm inadimplência de ${fm.pct(n)}, praticamente igual à dos aprovados (${fm.pct(a)}): ${fm.brl(neg)}/mês de demanda boa sendo recusada`,
+        action: 'rodar um challenger randomizado aprovando 30% dos negados deste cluster por 3 meses.',
+        sec: {
+          c1: { t: `${fm.brl(neg)}/mês negados no cluster`, b: `Com aprovação de <b>${fm.pct(apr)}</b>, quase metade da demanda fica sem atendimento. Aprovar 30% dos negados adicionaria <b>${fm.brl(inc)}/mês</b> de faturamento.` },
+          risk: { t: 'Negados com o mesmo risco dos aprovados', b: `Inadimplência dos negados em <b>${fm.pct(n)}</b> vs <b>${fm.pct(a)}</b> dos aprovados: separação de ${fm.x(n / a)}, contra ${fm.x(tr)} na carteira total. Indício forte de falso-negativo na política.` },
+          rent: { t: `Margem de ${fm.pct(rs.mp[11])} em MOB12, ${rs.mp[11] > rt.mp[11] ? 'acima' : 'abaixo'} da carteira`, b: `Carteira total em <b>${fm.pct(rt.mp[11])}</b>. Aprovar parte dos negados mexeria pouco no risco: inadimplência do cluster <b>${fm.pp(dPd, 2)}</b> na simulação.` },
+        },
+        ann: {
+          c1: [{ series: 'd', t: 13, text: `${fm.brl(neg)}/mês negados com risco de aprovado`, when: s => s.c1 === 'vol' }],
+          risk: [{ series: 'ng', t: R30, text: `Negados ${fm.pct(n)} ≈ aprovados ${fm.pct(a)}`, when: whenAnO30 }],
+        },
+      };
+    } },
+  { id: 'tk4', kind: 'atencao', focus: 'rent', short: 'MOB curto: risco nas safras novas',
+    filters: { cliente: ['MOB curto'] },
+    view: { c1: 'apr', risk: 'ac', rpop: 'ap', rmet: 'o30', rm: 'ccpb' },
+    build(V) {
+      const A = V.A, C = V.C, st = V.start;
+      const lp = liftStats(A, C, 'o30', R30, st, 'abs', 95, 21), la = liftStats(A, C, 'apr', T_REAL, st, 'abs', 95, 22), ln = liftStats(A, C, 'n30', R30, st, 'abs', 95, 23);
+      const rs = rentStats(V.saf, 'ccpb', 'acum', 90, V.key), rc = rentStats(V.safC, 'ccpb', 'acum', 90, V.keyC, false);
+      return {
+        key: fm.pct(rs.mp[11], 0),
+        headline: `MOB curto: aprovação ${fm.pp(la.mean)} vs controle, mas as safras novas convergem para CC/PB de ${fm.pct(rs.mp[11], 0)} em MOB12`,
+        action: 'limitar a ampliação do MOB curto a score Baixo e revisar a curva de limite inicial.',
+        sec: {
+          c1: { t: `Aprovação ${fm.pp(la.mean)} vs controle`, b: `Desde Fev/26 o piloto aprova mais transações de clientes com pouco tempo de casa (IC 95% ${fm.pp(la.lo)} a ${fm.pp(la.hi)}).` },
+          risk: { t: `Inadimplência ${fm.pp(lp.mean, 2)} vs controle`, b: `O ganho de aprovação veio com risco: diferença ${lp.sig ? 'significativa' : 'ainda não significativa'} (IC 95% ${fm.pp(lp.lo, 2)} a ${fm.pp(lp.hi, 2)}). Negados <b>${fm.pp(ln.mean)}</b> vs controle: o corte não melhorou.` },
+          rent: { t: `Safras novas convergem para CC/PB de ${fm.pct(rs.mp[11], 0)}`, b: `Mais provável em MOB12: <b>${fm.pct(rs.mp[11])}</b> vs <b>${fm.pct(rc.mp[11])}</b> no controle. A safra mais antiga (${fm.pct(rs.obs[11].mean)}) é pré-piloto e subestima o risco atual.` },
+        },
+        ann: {
+          c1: [{ series: 'a', t: T_REAL, text: `Aprovação ${fm.pp(la.mean)} vs controle`, when: s => s.c1 === 'apr' }],
+          risk: [{ series: 'a', t: R30, t0: st, text: `${fm.pp(lp.mean, 2)} vs controle desde o piloto`, when: s => s.risk === 'ac' && s.rpop === 'ap' && s.rmet === 'o30' }],
+        },
+      };
+    } },
+  { id: 'tk5', kind: 'atencao', focus: 'c1', short: 'Acima do poder de compra',
+    filters: { demanda: ['Acima do poder de compra'] },
+    view: { c1: 'vol', risk: 'an', rmet: 'o30', rm: 'mrg' },
+    build(V) {
+      const A = V.A, dy = rv(A, 'dem', T_REAL) / rv(A, 'dem', T_REAL - 12) - 1;
+      const ap0 = rv(A, 'apr', T_REAL - 12), ap1 = rv(A, 'apr', T_REAL), n = rv(A, 'n30', R30), a = rv(A, 'o30', R30);
+      const rs = rentStats(V.saf, 'mrg', 'acum', 90, V.key), rt = rentStats(total().saf, 'mrg', 'acum', 90, total().key, false);
+      return {
+        key: fm.spct(dy, 0),
+        headline: `Demanda acima do poder de compra ${fm.spct(dy, 0)} a/a, mas a aprovação caiu para ${fm.pct(ap1, 0)} e o que é aprovado rende menos que o resto da carteira`,
+        action: 'criar oferta de parcelamento ou limite emergencial com preço por risco para este fluxo, em vez de negar.',
+        sec: {
+          c1: { t: `Demanda ${fm.spct(dy, 0)} a/a, aprovação em ${fm.pct(ap1, 0)}`, b: `A aprovação caiu de <b>${fm.pct(ap0)}</b> para <b>${fm.pct(ap1)}</b> em 12 meses: o volume negado deste fluxo é o que mais cresce no autorizador.` },
+          risk: { t: `Corte correto: negados com ${fm.pct(n)}`, b: `Aprovados em <b>${fm.pct(a)}</b> e negados em <b>${fm.pct(n)}</b> (separação ${fm.x(n / a)}). O problema não é a política de risco, e sim a falta de produto para essa demanda.` },
+          rent: { t: `Margem de ${fm.pct(rs.mp[11])}, abaixo da carteira`, b: `(PB−CC)/Saldo mais provável em MOB12 vs <b>${fm.pct(rt.mp[11])}</b> da carteira total: o que é aprovado acima do poder de compra rende menos.` },
+        },
+        ann: {
+          c1: [{ series: 'd', t: T_REAL, text: `Demanda ${fm.spct(dy, 0)} a/a; aprovação em ${fm.pct(ap1, 0)}`, when: s => s.c1 !== 'apr' },
+               { series: 'a', t: T_REAL, t0: T_REAL - 12, text: `Aprovação ${fm.pct(ap0)} → ${fm.pct(ap1)}`, when: s => s.c1 === 'apr' }],
+          risk: [{ series: 'ng', t: R30, text: `Negados ${fm.pct(n)}: corte correto`, when: whenAnO30 }],
+        },
+      };
+    } },
+];
+const PREVIEW = {};
+function preview(tk) { if (!PREVIEW[tk.id]) { const V = computeView({ ...EMPTY(), ...tk.filters }); PREVIEW[tk.id] = tk.build(V); } return PREVIEW[tk.id]; }
+
+/* =====================================================================
+   5. ESTADO + ESCALA DO SLIDE
+   ===================================================================== */
+const state = { filters: EMPTY(), proj: true, hor: 6, boot: false, conf: 90, compare: true, annot: true,
+  c1: 'vol', risk: 'an', rmet: 'o30', rpop: 'ap', rm: 'ccpb', rmode: 'acum', rview: 'curva', safras: false, dark: false };
+const $ = s => document.querySelector(s);
+const stage = $('#stage');
+let SCALE = 1;
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080); SCALE = s;
+  stage.style.transform = `translate(${(innerWidth - 1920 * s) / 2}px,${(innerHeight - 1080 * s) / 2}px) scale(${s})`;
+}
+window.addEventListener('resize', fit); fit();
+const MCTX = document.createElement('canvas').getContext('2d');
+function textW(t, font) { MCTX.font = font; return MCTX.measureText(t).width; }
+function wrap(text, maxW, font) {
+  const words = text.split(' '), lines = []; let cur = '';
+  for (const w of words) { const t = cur ? cur + ' ' + w : w; if (textW(t, font) > maxW && cur) { lines.push(cur); cur = w; } else cur = t; }
+  if (cur) lines.push(cur); return lines;
+}
+const FCOL = () => state.dark ? { 15: '#a9cdf7', 16: '#5f9de9', 17: '#2f6fd0' } : { 15: '#163f86', 16: '#2a78d6', 17: '#7aa9ea' };
+const NAVY_LINE = () => state.dark ? '#dbe5f7' : '#0b1f45';
+
+/* =====================================================================
+   6. COMPONENTES DE GRÁFICO
+   ===================================================================== */
+function buildLine(gen, key, R, E, kind, nc) {
+  const z = Z[state.conf];
+  const seR = g => (kind === 'apr' ? g.sd.apr : kind === 'pd' ? g.sd.pd : g.sd.vol) * 0.7;
+  const kp = kind === 'apr' ? 0.0035 : kind === 'pd' ? 0.012 : 0.01;
+  let aT = R, aV = gen[R].r[key], aSe = seR(gen[R]);
+  if (nc && nc.length) { const l = nc[nc.length - 1]; aT = l.t; aV = l.v; aSe = l.se; }
+  const off = aV - gen[aT].e[key], pts = [];
+  for (let t = 0; t <= Math.max(E, aT); t++) {
+    const g = gen[t]; let v, se, n = null;
+    if (t <= R) { v = g.r[key]; se = seR(g); }
+    else if (nc && t <= aT) { n = nc.find(d => d.t === t); v = n.v; se = n.se; }
+    else { const h = t - aT; v = g.e[key] + off * Math.pow(.75, h); se = Math.sqrt(aSe ** 2 + (kp * h) ** 2); }
+    const half = kind === 'apr' ? z * se : z * se * Math.abs(v);
+    pts.push({ t, v, lo: v - half, hi: v + half, nc: n });
+  }
+  return pts;
+}
+function yFmtFor(kind, ticks) {
+  const step = ticks.length > 1 ? Math.abs(ticks[1] - ticks[0]) : 1;
+  if (kind === 'vol') { const mx = Math.max(...ticks.map(Math.abs)); if (mx >= 1e9) { const d = step / 1e9 < 1 ? 1 : 0; return v => NF(d).format(v / 1e9) + ' bi'; } if (mx >= 1e6) { const d = step / 1e6 < 1 ? 1 : 0; return v => NF(d).format(v / 1e6) + ' mi'; } return v => NF(0).format(v); }
+  if (kind === 'cli') return v => NF(0).format(v);
+  const d = step * 100 < 0.1 ? 2 : step * 100 < 1 ? 1 : 0;
+  return v => NF(d).format(v * 100) + '%';
+}
+function ensureTip(plot) { let t = plot.querySelector('.tip'); if (!t) { t = document.createElement('div'); t.className = 'tip'; plot.append(t); } return d3.select(t); }
+function tipFill(el, head, status, rows) {
+  el.replaceChildren();
+  const h = document.createElement('div'); h.className = 'h';
+  const h1 = document.createElement('span'); h1.textContent = head;
+  const h2 = document.createElement('span'); h2.className = 'st'; h2.textContent = status || ''; h.append(h1, h2); el.append(h);
+  rows.forEach(r => {
+    const row = document.createElement('div'); row.className = 'row';
+    const k = document.createElement('i'); k.className = 'k ' + (r.cls || ''); k.style.setProperty('--kc', r.color);
+    const v = document.createElement('span'); v.className = 'v'; v.textContent = r.v;
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = r.n;
+    row.append(k, v, n);
+    if (r.ci) { const c = document.createElement('span'); c.className = 'ci'; c.textContent = r.ci; row.append(c); }
+    el.append(row);
+  });
+}
+// caixas de anotação da IA (usadas nos gráficos de linha e no funil)
+function drawAnn(g, list, bounds, T) {
+  const AF = '600 12.5px Inter';
+  const D = list.map((a, i) => {
+    const lines = wrap(a.text, 176, AF), bw = Math.max(...lines.map(l => textW(l, AF))) + 34, bh = lines.length * 17 + 13;
+    let bx = a.ax > (bounds.l + bounds.r) / 2 ? a.ax - 18 - bw : a.ax + 18;
+    let by = a.ay - bounds.t > bh + 30 ? a.ay - bh - 22 : a.ay + 22;
+    bx = clamp(bx, 2, bounds.W - bw - 2); by = clamp(by, bounds.t, bounds.b - bh - 2);
+    return { ...a, i, lines, bw, bh, bx, by };
+  });
+  g.selectAll('rect.rg').data(D.filter(d => d.x0 != null), d => d.i).join('rect').attr('class', 'rg')
+    .style('fill', 'var(--ai-soft)').attr('x', d => d.x0).attr('width', d => Math.max(0, d.ax - d.x0)).attr('y', bounds.t).attr('height', bounds.b - bounds.t).attr('rx', 4);
+  const ag = g.selectAll('g.an').data(D, d => d.i + d.text).join(en => {
+    const e = en.append('g').attr('class', 'an').attr('opacity', 0);
+    e.append('line').attr('class', 'ld'); e.append('circle').attr('class', 'ring'); e.append('circle').attr('class', 'pt');
+    e.append('rect').attr('class', 'bx'); e.append('g').attr('class', 'tx'); return e;
+  }, up => up, ex => ex.remove());
+  (T ? ag.transition(T).delay(150) : ag).attr('opacity', 1);
+  ag.select('line.ld').style('stroke', 'var(--ai-line)').attr('stroke-width', 1.25)
+    .attr('x1', d => d.ax).attr('y1', d => d.ay).attr('x2', d => clamp(d.ax, d.bx, d.bx + d.bw)).attr('y2', d => d.by > d.ay ? d.by : d.by + d.bh);
+  ag.select('circle.ring').style('fill', 'none').style('stroke', 'var(--ai)').attr('stroke-width', 1.5).attr('r', 8).attr('cx', d => d.ax).attr('cy', d => d.ay);
+  ag.select('circle.pt').style('fill', d => d.color).style('stroke', 'var(--card)').attr('stroke-width', 1.5).attr('r', 4).attr('cx', d => d.ax).attr('cy', d => d.ay);
+  ag.select('rect.bx').style('fill', 'var(--card)').style('stroke', 'var(--ai-line)').attr('rx', 9).attr('x', d => d.bx).attr('y', d => d.by).attr('width', d => d.bw).attr('height', d => d.bh)
+    .style('filter', 'drop-shadow(0 6px 14px rgba(40,20,120,.14))');
+  ag.select('g.tx').each(function (d) {
+    const gg = d3.select(this); gg.selectAll('*').remove();
+    gg.append('text').attr('class', 'ann-s').attr('x', d.bx + 11).attr('y', d.by + 20).text('✦');
+    d.lines.forEach((l, j) => gg.append('text').attr('class', 'ann-t').attr('x', d.bx + 26).attr('y', d.by + 20 + j * 17).text(l));
+  });
+}
+
+function renderLine(card, cfg) {
+  const plot = card.querySelector('.plot');
+  const W = plot.clientWidth, H = plot.clientHeight;
+  const m = { t: 24, r: 74, b: 26, l: 50 };
+  let svg = d3.select(plot).select('svg.chart');
+  if (svg.empty()) {
+    svg = d3.select(plot).append('svg').attr('class', 'chart');
+    ['regions', 'grid', 'gap', 'bands', 'refs', 'lines', 'annbg', 'nc', 'dots', 'ann', 'labels', 'xax', 'hover'].forEach(c => svg.append('g').attr('class', 'L-' + c));
+    svg.append('rect').attr('class', 'overlay').attr('fill', 'transparent');
+  }
+  const tip = ensureTip(plot);
+  svg.style('display', null).attr('width', W).attr('height', H);
+  const T = d3.transition().duration(550).ease(d3.easeCubicOut);
+  const x = d3.scaleLinear().domain([0, cfg.xMax]).range([m.l, W - m.r]);
+  const vis = s => s.pts.filter(p => p.t <= cfg.xMax && (p.t <= s.R || p.nc || state.proj));
+  let lo = Infinity, hi = -Infinity;
+  cfg.series.forEach(s => vis(s).forEach(p => { const a = (state.boot || p.nc) ? p.lo : p.v, b = (state.boot || p.nc) ? p.hi : p.v; lo = Math.min(lo, a); hi = Math.max(hi, b); }));
+  (cfg.refs || []).forEach(r => { lo = Math.min(lo, r.v); hi = Math.max(hi, r.v); });
+  const pad = (hi - lo) * 0.12 || Math.abs(hi) * 0.1 || 1;
+  const y = d3.scaleLinear().domain([lo - pad, hi + pad]).nice(5).range([H - m.b, m.t]);
+  const yt = y.ticks(5), yf = yFmtFor(cfg.kind, yt);
+  const top = m.t - 16, bot = H - m.b;
+
+  // regiões: maturação + projeção
+  const regs = [];
+  if (cfg.matR != null && cfg.matR < T_REAL) regs.push({ id: 'mat', x0: cfg.matR, x1: T_REAL, fill: 'var(--mat-bg)', label: 'Maturação' });
+  if (cfg.xMax > T_REAL) regs.push({ id: 'proj', x0: T_REAL, x1: cfg.xMax, fill: 'var(--proj-bg)', label: 'Projeção' });
+  const rg = svg.select('.L-regions').selectAll('g.reg').data(regs, d => d.id).join(
+    en => { const g = en.append('g').attr('class', 'reg').attr('opacity', 0); g.append('rect'); g.append('text').attr('class', 'reglbl'); g.append('line'); return g; },
+    up => up, ex => ex.transition(T).attr('opacity', 0).remove());
+  rg.transition(T).attr('opacity', 1);
+  rg.select('rect').style('fill', d => d.fill).transition(T).attr('x', d => x(d.x0)).attr('y', top).attr('width', d => Math.max(0, x(d.x1) - x(d.x0))).attr('height', bot - top);
+  rg.select('line').style('stroke', 'var(--axis)').transition(T).attr('x1', d => x(d.x0)).attr('x2', d => x(d.x0)).attr('y1', top).attr('y2', bot);
+  rg.select('text').text(d => d.label).attr('display', d => (x(d.x1) - x(d.x0)) > textW(d.label.toUpperCase(), '700 10px Inter') + 12 ? null : 'none')
+    .transition(T).attr('x', d => x(d.x0) + 6).attr('y', top + 13);
+
+  // grid + eixo y
+  const gg = svg.select('.L-grid');
+  gg.selectAll('line').data(yt, d => d).join(en => en.append('line').attr('opacity', 0), up => up, ex => ex.remove())
+    .style('stroke', 'var(--grid)').attr('shape-rendering', 'crispEdges').attr('x1', m.l).attr('x2', W - m.r)
+    .transition(T).attr('y1', d => Math.round(y(d)) + .5).attr('y2', d => Math.round(y(d)) + .5).attr('opacity', 1);
+  gg.selectAll('text').data(yt, d => d).join(en => en.append('text').attr('opacity', 0), up => up, ex => ex.remove())
+    .style('font-size', '12px').style('fill', 'var(--muted)').style('font-variant-numeric', 'tabular-nums').attr('text-anchor', 'end').attr('x', m.l - 10).text(yf)
+    .transition(T).attr('y', d => y(d) + 4).attr('opacity', 1);
+
+  // eixo x
+  const xt = MONTHS.filter(mm => mm.i <= cfg.xMax && mm.m % 3 === 0);
+  svg.select('.L-xax').selectAll('text').data(xt, d => d.i).join(en => en.append('text').attr('opacity', 0), up => up, ex => ex.remove())
+    .style('font-size', '12px').style('fill', d => d.m === 0 ? 'var(--ink-2)' : 'var(--muted)').style('font-weight', d => d.m === 0 ? 650 : 400)
+    .attr('text-anchor', 'middle').attr('y', H - 6).text(d => d.label).transition(T).attr('x', d => x(d.i)).attr('opacity', 1);
+
+  // início do piloto
+  const ps = cfg.pilotStart != null ? [cfg.pilotStart] : [];
+  const pg = svg.select('.L-regions').selectAll('g.pil').data(ps).join(en => { const g = en.append('g').attr('class', 'pil'); g.append('line'); g.append('text').attr('class', 'reglbl'); return g; });
+  pg.select('line').style('stroke', 'var(--ink-2)').attr('stroke-opacity', .35).attr('y1', top).attr('y2', bot).attr('x1', d => x(d)).attr('x2', d => x(d));
+  const pilW = textW('INÍCIO PILOTO', '700 10px Inter') + 12, nextX = regs.length ? x(regs[0].x0) : Infinity;
+  pg.select('text').text('Início piloto').attr('text-anchor', d => x(d) + pilW > nextX ? 'end' : 'start').attr('x', d => x(d) + pilW > nextX ? x(d) - 6 : x(d) + 6).attr('y', top + 13);
+
+  // área entre duas séries (negado / separação)
+  const area = d3.area().x(p => x(p.t)).curve(d3.curveMonotoneX);
+  const gapD = [];
+  if (cfg.gap) {
+    const a = cfg.series.find(s => s.id === cfg.gap.top), b = cfg.series.find(s => s.id === cfg.gap.bottom);
+    const pa = vis(a), pb = vis(b), n = Math.min(pa.length, pb.length);
+    gapD.push({ pts: range(0, n).map(i => ({ t: pa[i].t, y1: pa[i].v, y0: pb[i].v })), n, label: cfg.gap.label });
+  }
+  svg.select('.L-gap').selectAll('path').data(gapD, d => d.n).join(en => en.append('path').attr('opacity', 0), up => up, ex => ex.transition(T).attr('opacity', 0).remove())
+    .style('fill', 'var(--gap)').transition(T).attr('opacity', 1).attr('d', d => area.y0(p => y(p.y0)).y1(p => y(p.y1))(d.pts));
+  const gl = svg.select('.L-gap').selectAll('text').data(gapD).join('text').attr('class', 'gaplbl').attr('text-anchor', 'middle').text(d => d.label);
+  if (gapD.length) { const p = gapD[0].pts[Math.min(5, gapD[0].pts.length - 1)]; const hgt = y(p.y0) - y(p.y1); gl.attr('display', hgt > 22 ? null : 'none').transition(T).attr('x', x(p.t)).attr('y', (y(p.y0) + y(p.y1)) / 2 + 4); }
+
+  // bandas de confiança (bootstrap)
+  const bands = state.boot ? cfg.series.filter(s => s.band).map(s => ({ id: s.id, s, pts: vis(s), n: vis(s).length })) : [];
+  svg.select('.L-bands').selectAll('path').data(bands, d => d.id + '|' + d.n).join(
+    en => en.append('path').attr('opacity', 0).attr('d', d => area.y0(p => y(p.lo)).y1(p => y(p.hi))(d.pts)), up => up, ex => ex.transition(T).attr('opacity', 0).remove())
+    .style('fill', d => d.s.band).transition(T).attr('opacity', 1).attr('d', d => area.y0(p => y(p.lo)).y1(p => y(p.hi))(d.pts));
+
+  // linhas de referência (ex.: apetite de risco)
+  const rfg = svg.select('.L-refs').selectAll('g.ref').data(cfg.refs || [], d => d.label).join(en => { const g = en.append('g').attr('class', 'ref').attr('opacity', 0); g.append('line'); g.append('text').attr('class', 'ref-t'); return g; }, up => up, ex => ex.remove());
+  rfg.transition(T).attr('opacity', 1);
+  rfg.select('line').style('stroke', 'var(--crit)').attr('stroke-opacity', .55).attr('stroke-width', 1.25).attr('x1', m.l).attr('x2', W - m.r).attr('y1', d => y(d.v)).attr('y2', d => y(d.v));
+  rfg.select('text').style('fill', 'var(--crit)').attr('x', m.l + 6).attr('y', d => y(d.v) - 6).text(d => d.label);
+
+  // linhas: realizado sólido, estimativa/projeção tracejada
+  const line = d3.line().x(p => x(p.t)).y(p => y(p.v)).curve(d3.curveMonotoneX);
+  const paths = [];
+  cfg.series.forEach(s => {
+    const real = s.pts.filter(p => p.t <= s.R);
+    paths.push({ key: `${s.id}|r|${real.length}`, s, pts: real, dash: null });
+    const pr = s.pts.filter(p => p.t >= s.R && p.t <= cfg.xMax && (p.t === s.R || p.nc || state.proj));
+    if (pr.length > 1) paths.push({ key: `${s.id}|p|${pr.length}`, s, pts: pr, dash: '6 5' });
+  });
+  svg.select('.L-lines').selectAll('path').data(paths, d => d.key).join(
+    en => en.append('path').attr('fill', 'none').attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('opacity', 0).attr('d', d => line(d.pts)),
+    up => up, ex => ex.transition(T).attr('opacity', 0).remove())
+    .style('stroke', d => d.s.color).attr('stroke-width', d => d.s.width || 2.25).attr('stroke-dasharray', d => d.dash)
+    .transition(T).attr('opacity', 1).attr('d', d => line(d.pts));
+
+  // estimativas por indicador antecedente (barras de IC que encolhem com a maturação)
+  const ncD = cfg.series.flatMap(s => s.pts.filter(p => p.nc).map(p => ({ s, p, id: s.id + p.t })));
+  const ng = svg.select('.L-nc').selectAll('g.ncb').data(ncD, d => d.id).join(en => { const g = en.append('g').attr('class', 'ncb').attr('opacity', 0); g.append('line').attr('class', 'w'); g.append('line').attr('class', 'c1'); g.append('line').attr('class', 'c2'); g.append('circle'); return g; }, up => up, ex => ex.remove());
+  ng.transition(T).attr('opacity', 1);
+  ng.select('line.w').style('stroke', d => d.s.color).attr('stroke-width', 2).attr('stroke-opacity', .6).transition(T).attr('x1', d => x(d.p.t)).attr('x2', d => x(d.p.t)).attr('y1', d => y(d.p.lo)).attr('y2', d => y(d.p.hi));
+  ng.select('line.c1').style('stroke', d => d.s.color).attr('stroke-width', 2).attr('stroke-opacity', .6).transition(T).attr('x1', d => x(d.p.t) - 4).attr('x2', d => x(d.p.t) + 4).attr('y1', d => y(d.p.lo)).attr('y2', d => y(d.p.lo));
+  ng.select('line.c2').style('stroke', d => d.s.color).attr('stroke-width', 2).attr('stroke-opacity', .6).transition(T).attr('x1', d => x(d.p.t) - 4).attr('x2', d => x(d.p.t) + 4).attr('y1', d => y(d.p.hi)).attr('y2', d => y(d.p.hi));
+  ng.select('circle').style('fill', 'var(--card)').style('stroke', d => d.s.color).attr('stroke-width', 2).attr('r', 3.5).transition(T).attr('cx', d => x(d.p.t)).attr('cy', d => y(d.p.v));
+
+  // ponto do último realizado
+  const dots = cfg.series.map(s => ({ s, p: s.pts.find(p => p.t === s.R) }));
+  svg.select('.L-dots').selectAll('circle').data(dots, d => d.s.id).join(en => en.append('circle').attr('r', 0), up => up, ex => ex.remove())
+    .style('fill', d => d.s.color).style('stroke', 'var(--card)').attr('stroke-width', 2)
+    .transition(T).attr('r', 4.5).attr('cx', d => x(d.p.t)).attr('cy', d => y(d.p.v));
+
+  // rótulos diretos no fim da linha
+  const lab = cfg.series.map(s => { const pv = vis(s), p = pv[pv.length - 1]; return { s, p, y0: y(p.v), yy: y(p.v), proj: p.t > s.R }; }).sort((a, b) => a.y0 - b.y0);
+  for (let i = 1; i < lab.length; i++) if (lab[i].yy - lab[i - 1].yy < 17) lab[i].yy = lab[i - 1].yy + 17;
+  const ov = lab.length ? lab[lab.length - 1].yy - (H - m.b) : 0; if (ov > 0) lab.forEach(l => l.yy -= ov);
+  const lg = svg.select('.L-labels').selectAll('g.el').data(lab, d => d.s.id).join(en => { const g = en.append('g').attr('class', 'el').attr('opacity', 0); g.append('path'); g.append('text'); return g; }, up => up, ex => ex.remove());
+  lg.transition(T).attr('opacity', 1);
+  lg.select('text').attr('class', d => 'endlbl' + (d.proj ? ' proj' : '') + (d.s.ctrl ? ' ctrl' : '')).text(d => cfg.fmtEnd(d.p.v))
+    .transition(T).attr('x', d => x(d.p.t) + 12).attr('y', d => d.yy + 4.5);
+  lg.select('path').style('stroke', 'var(--axis)').attr('fill', 'none').transition(T).attr('d', d => `M${x(d.p.t) + 3},${d.y0} L${x(d.p.t) + 9},${d.yy}`);
+
+  // anotações da IA
+  const annD = (state.annot ? (cfg.annotations || []) : []).map(a => {
+    const s = cfg.series.find(s2 => s2.id === a.series); if (!s) return null;
+    const p = s.pts.find(p2 => p2.t === a.t); if (!p || a.t > cfg.xMax) return null;
+    return { ...a, ax: x(a.t), ay: y(p.v), x0: a.t0 != null ? x(a.t0) : null, color: s.color };
+  }).filter(Boolean);
+  drawAnn(svg.select('.L-ann'), annD, { l: m.l, r: W - m.r, t: top, b: bot, W }, T);
+  svg.select('.L-annbg').selectAll('*').remove();
+
+  // hover: crosshair + tooltip com todas as séries
+  const hov = svg.select('.L-hover');
+  svg.select('rect.overlay').attr('x', m.l).attr('y', top).attr('width', W - m.l - m.r + 30).attr('height', bot - top)
+    .on('pointermove', ev => {
+      const r = plot.getBoundingClientRect(), mx = (ev.clientX - r.left) / SCALE;
+      const t = clamp(Math.round(x.invert(mx)), 0, cfg.xMax);
+      const rows = cfg.series.map(s => ({ s, p: s.pts.find(p => p.t === t) })).filter(d => d.p && (d.p.t <= d.s.R || d.p.nc || state.proj));
+      hov.selectAll('line').data([t]).join('line').style('stroke', 'var(--ink-2)').attr('stroke-opacity', .35).attr('x1', x(t)).attr('x2', x(t)).attr('y1', top).attr('y2', bot);
+      hov.selectAll('circle').data(rows, d => d.s.id).join('circle').attr('r', 5).style('fill', d => d.s.color).style('stroke', 'var(--card)').attr('stroke-width', 2).attr('cx', x(t)).attr('cy', d => y(d.p.v));
+      const ncp = rows.find(d => d.p.nc);
+      const status = t > T_REAL ? 'Projeção' : ncp ? (cfg.kind === 'pd' && cfg.matR === R30 ? `Estimado via ${LAD[ncp.p.nc.stage].lab} MOB${ncp.p.nc.stage}` : 'Em maturação') : 'Realizado';
+      tipFill(tip.node(), MONTHS[t].label, status, rows.map(({ s, p }) => ({ color: s.color, cls: p.t > s.R ? 'd' : '', v: cfg.fmtTip(p.v), n: s.label, ci: (state.boot || p.nc) ? `IC ${state.conf}% ${cfg.fmtEnd(p.lo)}–${cfg.fmtEnd(p.hi)}` : null })));
+      const el = tip.node(), tw = el.offsetWidth, left = x(t) > W * 0.55 ? x(t) - tw - 16 : x(t) + 16;
+      el.style.left = left + 'px'; el.style.top = (top + 4) + 'px'; el.style.opacity = 1;
+    })
+    .on('pointerleave', () => { hov.selectAll('*').remove(); tip.style('opacity', 0); });
+}
+
+function legend(el, items) {
+  el.replaceChildren(...items.map(it => {
+    const s = document.createElement('span'); s.className = 'lg';
+    const k = document.createElement('i'); k.className = 'k ' + it.type;
+    if (it.color) k.style.setProperty('--kc', it.color);
+    if (it.g0) { k.style.setProperty('--g0', it.g0); k.style.setProperty('--g1', it.g1); }
+    s.append(k, document.createTextNode(it.label)); return s;
+  }));
+}
+function std(series, extra = []) {
+  const it = series.map(s => ({ label: s.label, color: s.color, type: 'line' })).concat(extra);
+  if (state.proj) it.push({ label: 'Projeção', type: 'dash' });
+  if (state.boot) it.push({ label: `IC ${state.conf}%`, type: 'swatch', color: 'var(--band-ctrl)' });
+  return it;
+}
+function deltaChip(v, txt, better) { const cls = better === 0 || Math.abs(v) < 1e-9 ? 'neu' : (v > 0) === (better > 0) ? 'good' : 'crit'; return `<span class="delta ${cls}">${v > 0 ? '▲' : v < 0 ? '▼' : '■'} ${txt}</span>`; }
+function liftChip(L, txt, better) {
+  const cls = !L.sig ? 'neu' : (L.mean > 0) === (better > 0) ? 'good' : 'crit';
+  return `<span class="delta ${cls}">${txt} vs controle ${L.sig ? '✓' : '· n.s.'}</span>`;
+}
+function annFor(sec) { const b = CUR.tkb; if (!b || !b.ann || !b.ann[sec]) return []; return b.ann[sec].filter(a => !a.when || a.when(state)); }
+function refsFor(sec) { const b = CUR.tkb; if (!state.annot || !b || !b.refs || !b.refs[sec]) return []; return b.refs[sec].filter(a => !a.when || a.when(state)); }
+
+/* =====================================================================
+   7. SEÇÃO 01 — DEMANDA × FATURAMENTO
+   ===================================================================== */
+function renderC1() {
+  const V = CUR, card = $('#c1'), mode = state.c1, cmp = V.cmp;
+  const xMax = state.proj ? T_REAL + state.hor : T_REAL;
+  const kD = mode === 'cli' ? 'dpc' : 'dem', kF = mode === 'cli' ? 'fpc' : 'fat';
+  const series = [];
+  if (mode === 'apr') {
+    series.push({ id: 'a', label: cmp ? `Aprovação · ${V.labA}` : 'Taxa de aprovação', color: 'var(--c-fat)', band: 'var(--band-fat)', pts: buildLine(V.A, 'apr', T_REAL, xMax, 'apr'), R: T_REAL });
+    if (cmp) series.push({ id: 'c', label: `Aprovação · ${V.labC}`, color: 'var(--c-ctrl)', band: 'var(--band-ctrl)', pts: buildLine(V.C, 'apr', T_REAL, xMax, 'apr'), R: T_REAL, ctrl: true });
+  } else {
+    series.push({ id: 'd', label: cmp ? `Demanda · ${V.labA}` : 'Demanda', color: 'var(--c-dem)', band: 'var(--band-dem)', pts: buildLine(V.A, kD, T_REAL, xMax, 'vol'), R: T_REAL });
+    series.push({ id: 'f', label: cmp ? `Faturamento · ${V.labA}` : 'Faturamento aprovado', color: 'var(--c-fat)', band: 'var(--band-fat)', pts: buildLine(V.A, kF, T_REAL, xMax, 'vol'), R: T_REAL });
+    if (cmp) {
+      series.push({ id: 'dc', label: `Demanda · ${V.labC}`, color: 'var(--c-ctrl-2)', band: 'var(--band-ctrl)', pts: buildLine(V.C, kD, T_REAL, xMax, 'vol'), R: T_REAL, ctrl: true, width: 1.75 });
+      series.push({ id: 'fc', label: `Faturamento · ${V.labC}`, color: 'var(--c-ctrl)', band: 'var(--band-ctrl)', pts: buildLine(V.C, kF, T_REAL, xMax, 'vol'), R: T_REAL, ctrl: true });
+    }
+  }
+  const fmtEnd = mode === 'apr' ? v => fm.pct(v) : mode === 'cli' ? v => 'R$ ' + NF(0).format(v) : v => fm.brl(v).replace('R$ ', '');
+  const fmtTip = mode === 'apr' ? v => fm.pct(v) : v => fm.brl(v);
+  card.querySelector('[data-sub]').textContent = mode === 'apr' ? 'Faturamento aprovado ÷ demanda requisitada' : mode === 'cli' ? 'Transações requisitadas vs aprovadas · R$ por cliente/mês' : 'Soma das transações requisitadas vs aprovadas · R$/mês';
+
+  const A = V.A, g = A[T_REAL].r, g12 = A[T_REAL - 12].r;
+  let kpi;
+  if (cmp) {
+    const L = mode === 'apr' ? liftStats(A, V.C, 'apr', T_REAL, V.start, 'abs', state.conf, 101) : liftStats(A, V.C, 'fpc', T_REAL, V.start, 'rel', state.conf, 102);
+    const tx = mode === 'apr' ? fm.pp(L.mean) : fm.spct(L.mean);
+    const ci = mode === 'apr' ? `${fm.pp(L.lo)} a ${fm.pp(L.hi)}` : `${fm.spct(L.lo)} a ${fm.spct(L.hi)}`;
+    kpi = `<span class="kv">${mode === 'apr' ? fm.pct(g.apr) : 'R$ ' + NF(0).format(g.fpc)}</span>${liftChip(L, tx + (mode === 'apr' ? '' : ' fat./cli.'), 1)}<span class="kctx">IC ${state.conf}% ${ci}${L.did ? ' · diff-in-diff' : ''}</span>`;
+  } else if (mode === 'apr') {
+    kpi = `<span class="kv">${fm.pct(g.apr)}</span>${deltaChip(g.apr - g12.apr, fm.pp(g.apr - g12.apr) + ' a/a', 1)}<span class="kctx">Aprovação · Set/26 · negado ${fm.brl(g.dem - g.fat)}/mês</span>`;
+  } else {
+    const v = mode === 'cli' ? g.fpc : g.fat, v12 = mode === 'cli' ? g12.fpc : g12.fat;
+    kpi = `<span class="kv">${fm.brl(v)}</span>${deltaChip(v / v12 - 1, fm.spct(v / v12 - 1) + ' a/a', 1)}<span class="kctx">Faturamento aprovado · Set/26 · aprovação ${fm.pct(g.apr)}</span>`;
+  }
+  card.querySelector('.kpi').innerHTML = kpi;
+  const lgi = std(cmp && mode !== 'apr' ? [{ label: 'Demanda', color: 'var(--c-dem)' }, { label: 'Faturamento', color: 'var(--c-fat)' }, { label: `${V.labC} (cinza)`, color: 'var(--c-ctrl)' }] : series);
+  if (mode !== 'apr' && !cmp) lgi.splice(2, 0, { label: 'Negado', type: 'swatch', color: 'var(--gap)' });
+  legend(card.querySelector('.legend'), lgi);
+  renderLine(card, { series, xMax, kind: mode === 'apr' ? 'apr' : mode === 'cli' ? 'cli' : 'vol', fmtEnd, fmtTip,
+    gap: (mode !== 'apr' && !cmp) ? { top: 'd', bottom: 'f', label: 'Negado' } : null,
+    pilotStart: cmp ? V.start : null, annotations: annFor('c1'), refs: refsFor('c1') });
+}
+
+/* =====================================================================
+   8. SEÇÃO 02 — RISCO DE CRÉDITO (aprov × neg · ação × controle · previsibilidade)
+   ===================================================================== */
+function renderRisk() {
+  const V = CUR, card = $('#risk'), mode = state.risk, plot = card.querySelector('.plot');
+  const empty = plot.querySelector('.empty');
+  card.querySelector('.seg[data-k=rmet]').style.display = mode === 'prev' ? 'none' : '';
+  card.querySelector('.seg[data-k=rpop]').style.display = mode === 'ac' ? '' : 'none';
+  const note = $('#riskNote');
+  note.textContent = mode === 'prev' ? 'Estimativa = antecedente ÷ fator calibrado em 15 safras maduras (Abr/25–Jun/26). O IC encolhe a cada mês de maturação.' : '';
+  empty.hidden = true;
+  if (mode === 'prev') { d3.select(plot).select('svg.chart').style('display', 'none'); return renderFunnel(card, V); }
+  d3.select(plot).select('svg.fun').style('display', 'none');
+
+  const met = state.rmet, R = T_REAL - MAT[met], xMax = state.proj ? T_REAL + state.hor : T_REAL;
+  const mlab = met === 'o30' ? 'Over30 MOB3' : 'Over90 MOB6';
+  const ko = 'o' + met.slice(1), kn = 'n' + met.slice(1);
+  const sub = card.querySelector('[data-sub]');
+  if (mode === 'ac' && !V.hasPolicy) {
+    sub.textContent = `${mlab} · política filtrada vs demais políticas`;
+    empty.hidden = false; d3.select(plot).select('svg.chart').style('display', 'none');
+    card.querySelector('.kpi').innerHTML = '<span class="kctx" style="font-size:14px">Nenhuma política selecionada em Cálculo cliente</span>';
+    legend(card.querySelector('.legend'), []);
+    return;
+  }
+  let series, kpi, gap = null;
+  const A = V.A, tb = Math.max(0, R - 12), dLab = R - 12 >= 0 ? 'a/a' : 'vs ' + MONTHS[tb].label;
+  if (mode === 'an') {
+    sub.textContent = `${mlab} · aprovados vs negados por mês de decisão`;
+    series = [
+      { id: 'ng', label: 'Negados', color: 'var(--c-dem)', band: 'var(--band-dem)', pts: buildLine(A, kn, R, xMax, 'pd', nowcast(A, kn, V.key)), R },
+      { id: 'ap', label: 'Aprovados', color: 'var(--c-fat)', band: 'var(--band-fat)', pts: buildLine(A, ko, R, xMax, 'pd', nowcast(A, ko, V.key)), R },
+    ];
+    gap = { top: 'ng', bottom: 'ap', label: 'Separação' };
+    const v = rv(A, ko, R), v12 = rv(A, ko, tb), n = rv(A, kn, R);
+    kpi = `<span class="kv">${fm.pct(v, 2)}</span>${deltaChip(v - v12, fm.pp(v - v12, 2) + ' ' + dLab, -1)}<span class="kctx">Aprovados · ${MONTHS[R].label} · negados ${fm.pct(n, 2)} · separação ${fm.x(n / v)}</span>`;
+  } else {
+    const k = (state.rpop === 'ap' ? 'o' : 'n') + met.slice(1), isAp = state.rpop === 'ap';
+    sub.textContent = `${mlab} · ${isAp ? 'aprovados' : 'negados'} · ${V.labA.toLowerCase()} vs ${V.labC.toLowerCase()}`;
+    series = [
+      { id: 'a', label: V.labA, color: isAp ? 'var(--c-fat)' : 'var(--c-dem)', band: isAp ? 'var(--band-fat)' : 'var(--band-dem)', pts: buildLine(A, k, R, xMax, 'pd', nowcast(A, k, V.key)), R },
+      { id: 'c', label: V.labC, color: 'var(--c-ctrl)', band: 'var(--band-ctrl)', pts: buildLine(V.C, k, R, xMax, 'pd', nowcast(V.C, k, V.keyC)), R, ctrl: true },
+    ];
+    const L = liftStats(A, V.C, k, R, V.start, 'abs', state.conf, isAp ? 103 : 104);
+    kpi = `<span class="kv">${fm.pct(rv(A, k, R), 2)}</span>${liftChip(L, fm.pp(L.mean, 2), isAp ? -1 : 1)}<span class="kctx">IC ${state.conf}% ${fm.pp(L.lo, 2)} a ${fm.pp(L.hi, 2)}${L.did ? ' · diff-in-diff' : ''}</span>`;
+  }
+  card.querySelector('.kpi').innerHTML = kpi;
+  legend(card.querySelector('.legend'), std(series, [{ label: 'Antecedentes (IC)', type: 'nc' }]).concat([{ label: 'Maturação', type: 'region' }]));
+  renderLine(card, { series, xMax, kind: 'pd', matR: R, gap, fmtEnd: v => fm.pct(v, 2), fmtTip: v => fm.pct(v, 2),
+    pilotStart: mode === 'ac' ? V.start : null, annotations: annFor('risk'), refs: refsFor('risk') });
+}
+
+// Funil de previsibilidade: quanto cada safra aberta deve fechar em Over30 MOB3
+function renderFunnel(card, V) {
+  const plot = card.querySelector('.plot');
+  const W = plot.clientWidth, H = plot.clientHeight;
+  let svg = d3.select(plot).select('svg.fun');
+  if (svg.empty()) svg = d3.select(plot).append('svg').attr('class', 'fun');
+  svg.style('display', null).attr('width', W).attr('height', H);
+  svg.selectAll('*').remove();
+  const root = svg.append('g').attr('opacity', 0); root.transition().duration(400).attr('opacity', 1);
+  const tip = ensureTip(plot).style('opacity', 0);
+  const L = ladder(V.A, 'o30', V.key), z = Z[state.conf], C = FCOL();
+  const m = { t: 22, r: 146, b: 66, l: 48 };
+  const x = d3.scalePoint().domain([0, 1, 2, 3]).range([m.l, W - m.r]).padding(0.22);
+  const histT = range(R30 - 7, R30);
+  const open = [T_REAL - 2, T_REAL - 1, T_REAL].map((t, i) => {
+    const st = T_REAL - t, est = L.est[t][st], sgm = L.sig[st];
+    return { t, st, est, lo: est * (1 - z * sgm), hi: est * (1 + z * sgm), path: range(0, st + 1).map(k => ({ k, v: L.est[t][k] })), col: C[t], xe: x(3) + 22 + 15 * (2 - i), label: MONTHS[t].label };
+  });
+  const pathOf = t => [0, 1, 2].map(k => ({ k, v: L.est[t][k] })).concat({ k: 3, v: L.F[t] });
+  const ref6 = mean(range(R30 - 5, R30 + 1), t => L.F[t]);
+  const refs = refsFor('risk');
+  const vals = histT.concat(R30).flatMap(t => pathOf(t).map(p => p.v)).concat(open.flatMap(o => [o.lo, o.hi]), refs.map(r => r.v), [ref6]);
+  const lo = d3.min(vals), hi = d3.max(vals), pad = (hi - lo) * .08;
+  const y = d3.scaleLinear().domain([lo - pad, hi + pad]).nice(5).range([H - m.b, m.t]);
+  const yt = y.ticks(5), yf = yFmtFor('pd', yt);
+  const ln = d3.line().x(d => x(d.k)).y(d => y(d.v)).curve(d3.curveMonotoneX);
+
+  root.append('g').selectAll('line').data(yt).join('line').style('stroke', 'var(--grid)').attr('shape-rendering', 'crispEdges').attr('x1', m.l).attr('x2', W - 8).attr('y1', d => Math.round(y(d)) + .5).attr('y2', d => Math.round(y(d)) + .5);
+  root.append('g').selectAll('text').data(yt).join('text').style('font-size', '12px').style('fill', 'var(--muted)').style('font-variant-numeric', 'tabular-nums').attr('text-anchor', 'end').attr('x', m.l - 10).attr('y', d => y(d) + 4).text(yf);
+  // colunas de estágio
+  [0, 1, 2, 3].forEach(k => root.append('line').attr('x1', x(k)).attr('x2', x(k)).attr('y1', m.t - 8).attr('y2', H - m.b).style('stroke', k === 3 ? 'var(--axis)' : 'var(--grid)'));
+  const xl = root.append('g');
+  [0, 1, 2, 3].forEach(k => {
+    const lab1 = 'MOB' + k, lab2 = k < 3 ? LAD[k].lab : 'Over30 · final';
+    xl.append('text').attr('x', x(k)).attr('y', H - m.b + 19).attr('text-anchor', 'middle').style('font-size', '12.5px').style('font-weight', 700).style('fill', 'var(--navy-ink)').text(lab1);
+    xl.append('text').attr('x', x(k)).attr('y', H - m.b + 35).attr('text-anchor', 'middle').style('font-size', '11.5px').style('fill', 'var(--muted)').text(lab2);
+    const prec = k < 3 ? `IC ±${NF(1).format(z * L.sig[k] * ref6 * 100)} p.p.` : 'realizado';
+    xl.append('text').attr('x', x(k)).attr('y', H - m.b + 53).attr('text-anchor', 'middle').style('font-size', '11.5px').style('font-weight', 700).style('fill', k < 3 ? 'var(--ai)' : 'var(--ink-2)').text(prec);
+  });
+  // referências
+  const rr = [{ v: ref6, label: `Média 6 safras maduras ${fm.pct(ref6)}`, col: 'var(--ink-2)', op: .45 }].concat(refs.map(r => ({ v: r.v, label: r.label, col: 'var(--crit)', op: .6 })));
+  rr.forEach(r => { root.append('line').attr('x1', m.l).attr('x2', x(3)).attr('y1', y(r.v)).attr('y2', y(r.v)).style('stroke', r.col).attr('stroke-opacity', r.op).attr('stroke-width', 1.25); root.append('text').attr('class', 'ref-t').style('fill', r.col).attr('x', m.l + 6).attr('y', y(r.v) - 6).text(r.label); });
+  // trajetórias das safras maduras: a estimativa converge para o realizado
+  histT.forEach(t => {
+    const p = pathOf(t);
+    root.append('path').attr('d', ln(p)).attr('fill', 'none').style('stroke', 'var(--c-hist)').attr('stroke-width', 1.25);
+    root.append('circle').attr('cx', x(3)).attr('cy', y(p[3].v)).attr('r', 2.5).style('fill', 'var(--c-hist)');
+  });
+  const pj = pathOf(R30);
+  root.append('path').attr('d', ln(pj)).attr('fill', 'none').style('stroke', NAVY_LINE()).attr('stroke-width', 2.25);
+  pj.forEach((p, i) => root.append('circle').attr('cx', x(p.k)).attr('cy', y(p.v)).attr('r', i === 3 ? 5 : 3.5).style('fill', NAVY_LINE()).style('stroke', 'var(--card)').attr('stroke-width', 2));
+  // leques das safras abertas (o mais largo embaixo)
+  [...open].reverse().forEach(o => {
+    const x0 = x(o.st), y0 = y(o.est);
+    root.append('path').attr('d', `M${x0},${y0} L${o.xe},${y(o.hi)} L${o.xe},${y(o.lo)} Z`).style('fill', o.col).attr('fill-opacity', .09).style('stroke', o.col).attr('stroke-opacity', .35).attr('stroke-width', 1);
+    root.append('line').attr('x1', x0).attr('y1', y0).attr('x2', o.xe).attr('y2', y0).style('stroke', o.col).attr('stroke-width', 1.75).attr('stroke-dasharray', '5 4');
+    root.append('path').attr('d', ln(o.path)).attr('fill', 'none').style('stroke', o.col).attr('stroke-width', 2.25);
+    o.path.forEach(p => root.append('circle').attr('cx', x(p.k)).attr('cy', y(p.v)).attr('r', 3.5).style('fill', o.col).style('stroke', 'var(--card)').attr('stroke-width', 2));
+    root.append('line').attr('x1', o.xe).attr('x2', o.xe).attr('y1', y(o.lo)).attr('y2', y(o.hi)).style('stroke', o.col).attr('stroke-width', 2.5).attr('stroke-linecap', 'round');
+    [o.lo, o.hi].forEach(v => root.append('line').attr('x1', o.xe - 5).attr('x2', o.xe + 5).attr('y1', y(v)).attr('y2', y(v)).style('stroke', o.col).attr('stroke-width', 2));
+    root.append('circle').attr('cx', o.xe).attr('cy', y0).attr('r', 4.5).style('fill', 'var(--card)').style('stroke', o.col).attr('stroke-width', 2.5);
+  });
+  // rótulos à direita
+  const labs = open.map(o => ({ y0: y(o.est), yy: y(o.est), t1: `${o.label} · ${fm.pct(o.est, 2)}`, t2: `${fm.pct(o.lo)}–${fm.pct(o.hi)} · MOB${o.st}`, col: o.col, x0: o.xe }))
+    .concat([{ y0: y(pj[3].v), yy: y(pj[3].v), t1: `Jun/26 · ${fm.pct(pj[3].v, 2)}`, t2: 'realizado', col: NAVY_LINE(), x0: x(3) }]).sort((a, b) => a.y0 - b.y0);
+  for (let i = 1; i < labs.length; i++) if (labs[i].yy - labs[i - 1].yy < 31) labs[i].yy = labs[i - 1].yy + 31;
+  const ov = labs[labs.length - 1].yy - (H - m.b); if (ov > 0) labs.forEach(l => l.yy -= ov);
+  const lx = x(3) + 72;
+  labs.forEach(l => {
+    root.append('path').attr('d', `M${l.x0 + 7},${l.y0} L${lx - 6},${l.yy}`).style('stroke', 'var(--axis)').attr('fill', 'none');
+    root.append('rect').attr('x', lx).attr('y', l.yy - 6).attr('width', 3).attr('height', 26).attr('rx', 1.5).style('fill', l.col);
+    root.append('text').attr('class', 'fl').attr('x', lx + 9).attr('y', l.yy + 5).text(l.t1);
+    root.append('text').attr('class', 'fl2').attr('x', lx + 9).attr('y', l.yy + 19).text(l.t2);
+  });
+  // anotação da IA
+  if (state.annot) {
+    const al = annFor('risk').filter(a => a.fun != null).map(a => { const o = open.find(oo => oo.t === a.fun); return o ? { ...a, ax: o.xe, ay: y(o.est), color: o.col } : null; }).filter(Boolean);
+    drawAnn(root.append('g'), al, { l: m.l, r: x(3), t: m.t - 8, b: H - m.b, W: x(3) + 40 });
+  }
+  // hover por estágio
+  const step = x.step();
+  [0, 1, 2, 3].forEach(k => {
+    root.append('rect').attr('x', x(k) - step / 2).attr('width', step).attr('y', m.t - 8).attr('height', H - m.b - m.t + 8).attr('fill', 'transparent')
+      .on('pointerenter', () => {
+        const rows = [];
+        open.filter(o => o.st >= k).forEach(o => rows.push({ color: o.col, v: fm.pct(L.est[o.t][Math.min(k, 2)], 2), n: `${o.label} · ${k < 3 ? LAD[k].lab + ' ' + fm.pct(L.raw[o.t][k], 1) : ''}`, ci: o.st === k ? `IC ${fm.pct(o.lo)}–${fm.pct(o.hi)}` : null }));
+        rows.push({ color: '#dbe5f7', v: fm.pct(pj[k].v, 2), n: `Jun/26${k < 3 ? ' · ' + LAD[k].lab + ' ' + fm.pct(L.raw[R30][k], 1) : ' · realizado'}` });
+        const el = tip.node();
+        tipFill(el, k < 3 ? `MOB${k} · ${LAD[k].lab}` : 'MOB3 · Over30 final', k < 3 ? `IC ±${NF(1).format(z * L.sig[k] * ref6 * 100)} p.p.` : 'Realizado', rows);
+        const left = x(k) > W * .5 ? x(k) - el.offsetWidth - 16 : x(k) + 16; el.style.left = left + 'px'; el.style.top = m.t + 'px'; el.style.opacity = 1;
+      })
+      .on('pointerleave', () => tip.style('opacity', 0));
+  });
+  // KPI + legenda
+  const s0 = open[2], jun = pj[3].v;
+  card.querySelector('[data-sub]').textContent = 'Over30 MOB3 estimado das safras abertas pelos indicadores antecedentes';
+  card.querySelector('.kpi').innerHTML = `<span class="kv">${fm.pct(s0.est, 2)}</span>${deltaChip(s0.est - jun, fm.pp(s0.est - jun, 2) + ' vs Jun/26', -1)}<span class="kctx">Set/26 via Over5 MOB0 · IC ${state.conf}% ${fm.pct(s0.lo)}–${fm.pct(s0.hi)}</span>`;
+  legend(card.querySelector('.legend'), [
+    { label: 'Safras maduras', type: 'line', color: 'var(--c-hist)' }, { label: 'Jun/26', type: 'line', color: NAVY_LINE() },
+    { label: 'Jul/26', type: 'dot', color: C[15] }, { label: 'Ago/26', type: 'dot', color: C[16] }, { label: 'Set/26', type: 'dot', color: C[17] },
+    { label: `Faixa IC ${state.conf}%`, type: 'swatch', color: 'var(--band-dem)' }]);
+}
+
+/* =====================================================================
+   9. SEÇÃO 03 — RENTABILIDADE POR SAFRA (candles + "mais provável")
+   ===================================================================== */
+function seqColors() { return state.dark ? ['#16233a', '#86b6ef'] : ['#eef4fd', '#174a94']; }
+function safColors() { return state.dark ? ['#2f4466', '#a8c9f8'] : ['#c4d6f2', '#1b4d9b']; }
+function lum(c) { const r = d3.rgb(c); const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }; return .2126 * f(r.r) + .7152 * f(r.g) + .0722 * f(r.b); }
+
+function renderRent() {
+  const V = CUR, card = $('#rent'), plot = card.querySelector('.plot');
+  const RS = rentStats(V.saf, state.rm, state.rmode, state.conf, V.key);
+  const RC = V.cmp ? rentStats(V.safC, state.rm, state.rmode, state.conf, V.keyC, false) : null;
+  const M = RS.M, pf = v => fm.pct(v, 1), showMP = state.proj, o12 = RS.obs[11];
+  card.querySelector('[data-sub]').textContent = `${M.long} · 12 safras (Set/25–Ago/26) por MOB`;
+  card.querySelector('.kpi').innerHTML = showMP
+    ? `<span class="kv">${pf(RS.mp[11])}</span>${deltaChip(RS.mp[11] - o12.mean, fm.pp(RS.mp[11] - o12.mean) + ' vs safra antiga', M.better)}<span class="kctx">Mais provável MOB12 · IC ${state.conf}% ${pf(RS.lo[11])}–${pf(RS.hi[11])}${RC ? ` · ${V.labC.toLowerCase()} ${pf(RC.mp[11])}` : ''}</span>`
+    : `<span class="kv">${pf(o12.mean)}</span><span class="kctx">${M.label} observado em MOB12 · 1 safra (${o12.first}) · ligue Projeções para a estimativa</span>`;
+  const li = [];
+  if (state.rview === 'curva') {
+    li.push({ label: 'Observado', type: 'line', color: 'var(--c-fat)' });
+    if (showMP) li.push({ label: 'Mais provável (IA)', type: 'dash' }, { label: `IC ${state.conf}%`, type: 'swatch', color: 'var(--band-fat)' });
+    li.push({ label: 'Dispersão (safras)', type: 'candle' });
+    if (RC) li.push({ label: V.labC, type: 'line', color: 'var(--c-ctrl)' });
+  } else {
+    const vals = RS.tri.flatMap(r => r.cells.map(c => c.v));
+    li.push({ label: `${pf(d3.min(vals))} → ${pf(d3.max(vals))}`, type: 'grad', g0: seqColors()[0], g1: seqColors()[1] }, { label: 'Itálico = projetado (chain-ladder)', type: 'region' });
+  }
+  legend(card.querySelector('.legend'), li);
+
+  const W = plot.clientWidth, H = plot.clientHeight;
+  let svg = d3.select(plot).select('svg.chart');
+  if (svg.empty()) svg = d3.select(plot).append('svg').attr('class', 'chart');
+  svg.attr('width', W).attr('height', H);
+  svg.selectAll('*').remove();
+  const root = svg.append('g').attr('opacity', 0); root.transition().duration(400).attr('opacity', 1);
+  const tip = ensureTip(plot).style('opacity', 0);
+  if (state.rview === 'tri') return drawTri(root, W, H, RS, tip);
+
+  const m = { t: 16, r: 66, b: 44, l: 48 };
+  const x = d3.scalePoint().domain(d3.range(1, 13)).range([m.l, W - m.r]).padding(0.45);
+  let lo = Infinity, hi = -Infinity;
+  RS.obs.forEach(o => { lo = Math.min(lo, o.min); hi = Math.max(hi, o.max); });
+  if (showMP) RS.lo.forEach((v, i) => { lo = Math.min(lo, v); hi = Math.max(hi, RS.hi[i]); });
+  if (RC) RC.mp.forEach(v => { lo = Math.min(lo, v); hi = Math.max(hi, v); });
+  const pad = (hi - lo) * .08;
+  const y = d3.scaleLinear().domain([lo - pad, hi + pad]).nice(5).range([H - m.b, m.t]);
+  const yt = y.ticks(5), yf = yFmtFor('pd', yt);
+  root.append('g').selectAll('line').data(yt).join('line').style('stroke', d => d === 0 ? 'var(--axis)' : 'var(--grid)').attr('shape-rendering', 'crispEdges')
+    .attr('x1', m.l).attr('x2', W - m.r + 8).attr('y1', d => Math.round(y(d)) + .5).attr('y2', d => Math.round(y(d)) + .5);
+  root.append('g').selectAll('text').data(yt).join('text').style('font-size', '12px').style('fill', 'var(--muted)').style('font-variant-numeric', 'tabular-nums').attr('text-anchor', 'end').attr('x', m.l - 10).attr('y', d => y(d) + 4).text(yf);
+  const xa = root.append('g');
+  xa.append('text').style('font-size', '10.5px').style('font-weight', 700).style('fill', 'var(--muted)').attr('text-anchor', 'end').attr('x', m.l - 10).attr('y', H - m.b + 19).text('MOB');
+  xa.append('text').style('font-size', '10.5px').style('fill', 'var(--muted)').attr('text-anchor', 'end').attr('x', m.l - 10).attr('y', H - m.b + 35).text('safras');
+  RS.obs.forEach(o => {
+    xa.append('text').style('font-size', '12px').style('fill', 'var(--ink-2)').style('font-weight', 650).attr('text-anchor', 'middle').attr('x', x(o.k)).attr('y', H - m.b + 19).text(o.k);
+    xa.append('text').style('font-size', '11px').style('fill', 'var(--muted)').style('font-variant-numeric', 'tabular-nums').attr('text-anchor', 'middle').attr('x', x(o.k)).attr('y', H - m.b + 35).text(o.n);
+  });
+
+  if (state.safras) {
+    const sc = d3.scaleLinear().domain([0, 11]).range(safColors()).interpolate(d3.interpolateLab);
+    const lineS = d3.line().x(d => x(d.k)).y(d => y(d.v)).curve(d3.curveMonotoneX);
+    V.saf.forEach((s, i) => {
+      const pts = RS.obs.filter(o => o.vals.some(v => v.s === s.s)).map(o => ({ k: o.k, v: o.vals.find(v => v.s === s.s).v }));
+      root.append('path').attr('d', lineS(pts)).attr('fill', 'none').style('stroke', sc(i)).attr('stroke-width', 1.4).attr('stroke-opacity', .8);
+      if (pts.length) root.append('circle').attr('cx', x(pts[pts.length - 1].k)).attr('cy', y(pts[pts.length - 1].v)).attr('r', 2.5).style('fill', sc(i));
+    });
+    const gid = 'sg' + Math.random().toString(36).slice(2, 7);
+    const lgd = svg.append('defs').append('linearGradient').attr('id', gid);
+    lgd.append('stop').attr('offset', '0%').attr('stop-color', safColors()[0]); lgd.append('stop').attr('offset', '100%').attr('stop-color', safColors()[1]);
+    const gl = root.append('g').attr('transform', `translate(${m.l + 8},${m.t + 2})`);
+    gl.append('text').attr('class', 'fl2').attr('y', 9).text('Set/25');
+    gl.append('rect').attr('x', 42).attr('y', 2).attr('width', 60).attr('height', 7).attr('rx', 3.5).style('fill', `url(#${gid})`);
+    gl.append('text').attr('class', 'fl2').attr('x', 108).attr('y', 9).text('Ago/26');
+  }
+
+  // candles: caixa = P25–P75 entre safras, haste = mín–máx; largura ∝ nº de safras
+  const cg = root.append('g');
+  RS.obs.forEach(o => {
+    const cx = x(o.k), bw = 6 + 18 * (o.n / 12);
+    cg.append('line').attr('x1', cx).attr('x2', cx).attr('y1', y(o.min)).attr('y2', y(o.max)).style('stroke', 'var(--c-dem)').attr('stroke-width', 1.5).attr('stroke-opacity', .55);
+    if (o.n > 1) {
+      cg.append('rect').attr('x', cx - bw / 2).attr('width', bw).attr('y', y(o.q3)).attr('height', Math.max(2, y(o.q1) - y(o.q3))).attr('rx', 3).style('fill', 'var(--band-dem)');
+      cg.append('line').attr('x1', cx - bw / 2).attr('x2', cx + bw / 2).attr('y1', y(o.med)).attr('y2', y(o.med)).style('stroke', 'var(--c-dem)').attr('stroke-width', 1.5).attr('stroke-opacity', .8);
+      [o.min, o.max].forEach(v => cg.append('line').attr('x1', cx - 4).attr('x2', cx + 4).attr('y1', y(v)).attr('y2', y(v)).style('stroke', 'var(--c-dem)').attr('stroke-width', 1.5).attr('stroke-opacity', .55));
+    }
+  });
+  const ln = d3.line().x(d => x(d.k)).y(d => y(d.v)).curve(d3.curveMonotoneX);
+  const ar = d3.area().x(d => x(d.k)).y0(d => y(d.lo)).y1(d => y(d.hi)).curve(d3.curveMonotoneX);
+  if (showMP) root.append('path').attr('d', ar(RS.mp.map((v, i) => ({ k: i + 1, lo: RS.lo[i], hi: RS.hi[i] })))).style('fill', 'var(--band-fat)').attr('opacity', .85);
+  const ends = [];
+  if (RC) {
+    const cv = showMP ? RC.mp : RC.obs.map(o => o.mean);
+    root.append('path').attr('d', ln(cv.map((v, i) => ({ k: i + 1, v })))).attr('fill', 'none').style('stroke', 'var(--c-ctrl)').attr('stroke-width', 2).attr('stroke-dasharray', showMP ? '6 5' : null);
+    ends.push({ v: cv[11], cls: 'endlbl ctrl' });
+  }
+  root.append('path').attr('d', ln(RS.obs.map(o => ({ k: o.k, v: o.mean })))).attr('fill', 'none').style('stroke', 'var(--c-fat)').attr('stroke-width', 2.25).attr('stroke-linecap', 'round');
+  ends.push({ v: o12.mean, cls: 'endlbl proj' });
+  if (showMP) { root.append('path').attr('d', ln(RS.mp.map((v, i) => ({ k: i + 1, v })))).attr('fill', 'none').style('stroke', 'var(--c-fat)').attr('stroke-width', 2.25).attr('stroke-dasharray', '6 5'); ends.push({ v: RS.mp[11], cls: 'endlbl' }); }
+  RS.obs.forEach(o => root.append('circle').attr('cx', x(o.k)).attr('cy', y(o.mean)).attr('r', 4.5).style('fill', 'var(--c-fat)').attr('fill-opacity', .35 + .65 * o.n / 12).style('stroke', 'var(--card)').attr('stroke-width', 2));
+  // rótulos diretos em MOB12
+  ends.forEach(e => { e.y0 = y(e.v); e.yy = e.y0; }); ends.sort((a, b) => a.y0 - b.y0);
+  for (let i = 1; i < ends.length; i++) if (ends[i].yy - ends[i - 1].yy < 17) ends[i].yy = ends[i - 1].yy + 17;
+  ends.forEach(e => {
+    root.append('path').attr('d', `M${x(12) + 5},${e.y0} L${x(12) + 11},${e.yy}`).style('stroke', 'var(--axis)').attr('fill', 'none');
+    root.append('text').attr('class', e.cls).attr('x', x(12) + 14).attr('y', e.yy + 4.5).text(pf(e.v));
+  });
+
+  const hov = root.append('g');
+  root.append('rect').attr('x', m.l).attr('y', m.t - 10).attr('width', W - m.r - m.l).attr('height', H - m.b - m.t + 10).attr('fill', 'transparent')
+    .on('pointermove', ev => {
+      const r = plot.getBoundingClientRect(), mx = (ev.clientX - r.left) / SCALE;
+      const k = clamp(Math.round((mx - x(1)) / x.step()) + 1, 1, 12), o = RS.obs[k - 1];
+      hov.selectAll('*').remove();
+      hov.append('rect').attr('x', x(k) - x.step() / 2).attr('width', x.step()).attr('y', m.t - 10).attr('height', H - m.b - m.t + 10).style('fill', 'var(--navy)').attr('opacity', .05).attr('rx', 6);
+      const rows = [{ color: 'var(--c-fat)', v: pf(o.mean), n: 'Observado (média ponderada)' }];
+      if (o.n > 1) { rows.push({ color: 'var(--c-dem)', cls: 'b', v: `${pf(o.q1)} – ${pf(o.q3)}`, n: 'P25–P75 entre safras' }); rows.push({ color: 'var(--c-dem)', v: `${pf(o.min)} – ${pf(o.max)}`, n: 'Mín–máx' }); }
+      if (showMP) rows.push({ color: 'var(--c-fat)', cls: 'd', v: pf(RS.mp[k - 1]), n: 'Mais provável (IA)', ci: `IC ${pf(RS.lo[k - 1])}–${pf(RS.hi[k - 1])}` });
+      if (RC) rows.push({ color: 'var(--c-ctrl)', cls: showMP ? 'd' : '', v: pf(showMP ? RC.mp[k - 1] : RC.obs[k - 1].mean), n: V.labC });
+      const el = tip.node();
+      tipFill(el, `MOB ${k} · ${M.label}`, o.n === 1 ? `1 safra (${o.first})` : `${o.n} safras (${o.first}–${o.last})`, rows);
+      const left = x(k) > W * .5 ? x(k) - el.offsetWidth - 20 : x(k) + 20;
+      el.style.left = left + 'px'; el.style.top = m.t + 'px'; el.style.opacity = 1;
+    })
+    .on('pointerleave', () => { hov.selectAll('*').remove(); tip.style('opacity', 0); });
+}
+
+function drawTri(root, W, H, RS, tip) {
+  const m = { t: 22, r: 4, b: 2, l: 88 };
+  const rows = RS.tri.map(r => ({ ...r, type: 'saf' }));
+  rows.push({ type: 'sum', label: 'Observado', cells: RS.obs.map(o => ({ k: o.k, v: o.mean, proj: false })) });
+  rows.push({ type: 'sum', label: 'Mais provável', cells: RS.mp.map((v, i) => ({ k: i + 1, v, proj: false })) });
+  const x = d3.scaleBand().domain(d3.range(1, 13)).range([m.l, W - m.r]).paddingInner(.07);
+  const yy = d3.scaleBand().domain(d3.range(rows.length)).range([m.t, H - m.b - 8]).paddingInner(.1);
+  const vals = RS.tri.flatMap(r => r.cells.map(c => c.v));
+  const col = d3.scaleSequential().domain(d3.extent(vals)).interpolator(d3.interpolateLab(...seqColors()));
+  root.append('g').selectAll('text').data(d3.range(1, 13)).join('text').style('font-size', '11px').style('font-weight', 650).style('fill', 'var(--ink-2)').attr('text-anchor', 'middle').attr('x', d => x(d) + x.bandwidth() / 2).attr('y', m.t - 8).text(d => 'M' + d);
+  const off = i => yy(i) + (rows[i].type === 'sum' ? 8 : 0);
+  rows.forEach((r, i) => {
+    const g = root.append('g');
+    g.append('text').attr('class', 'tri-r' + (r.type === 'sum' ? ' s' : '')).attr('x', m.l - 10).attr('text-anchor', 'end').attr('y', off(i) + yy.bandwidth() / 2 + 4).text(r.label);
+    r.cells.forEach(c => {
+      const cx = x(c.k), cy = off(i), w = x.bandwidth(), h = yy.bandwidth();
+      const fill = r.type === 'sum' ? null : col(c.v);
+      const rc = g.append('rect').attr('x', cx).attr('y', cy).attr('width', w).attr('height', h).attr('rx', 3);
+      if (r.type === 'sum') rc.style('fill', 'var(--card-2)').style('stroke', i === rows.length - 1 ? 'var(--ai-line)' : 'var(--line-2)');
+      else rc.style('fill', fill).attr('fill-opacity', c.proj ? .32 : 1);
+      const dark = fill && !c.proj && lum(fill) < .4;
+      g.append('text').attr('class', 'tri-t' + (c.proj ? ' p' : '')).attr('text-anchor', 'middle').attr('x', cx + w / 2).attr('y', cy + h / 2 + 4)
+        .style('fill', r.type === 'sum' ? 'var(--ink)' : c.proj ? 'var(--ink-2)' : dark ? '#ffffff' : '#0b1a33').text(NF(1).format(c.v * 100));
+      g.append('rect').attr('x', cx).attr('y', cy).attr('width', w).attr('height', h).attr('fill', 'transparent')
+        .on('pointerenter', () => {
+          const el = tip.node();
+          tipFill(el, r.type === 'saf' ? `Safra ${r.label} · MOB ${c.k}` : `${r.label} · MOB ${c.k}`, r.type === 'saf' ? (c.proj ? 'Projetado' : 'Observado') : 'Resumo', [{ color: 'var(--c-dem)', cls: 'b', v: fm.pct(c.v), n: RS.M.label }]);
+          const left = cx > W * .55 ? cx - el.offsetWidth - 10 : cx + w + 10; el.style.left = left + 'px'; el.style.top = Math.max(0, cy - 10) + 'px'; el.style.opacity = 1;
+        })
+        .on('pointerleave', () => tip.style('opacity', 0));
+    });
+  });
+}
+
+/* =====================================================================
+   10. TAKEAWAYS ESCRITOS (abaixo de cada gráfico)
+   ===================================================================== */
+function sevHTML(kind) { const k = KIND[kind]; return `<span class="sev ${k.cls}">${k.icon} ${k.label}</span>`; }
+function suggestFor(sec) {
+  const own = TAKEAWAYS.filter(t => t.focus === sec), rest = TAKEAWAYS.filter(t => t.focus !== sec);
+  return own.concat(rest).slice(0, 2);
+}
+function renderTakeaways() {
+  const b = CUR.tkb, tk = CUR.tk;
+  ['c1', 'risk', 'rent'].forEach(id => {
+    const el = $('#' + id + ' .tkb');
+    el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+    if (b && b.sec && b.sec[id]) {
+      const k = KIND[tk.kind];
+      el.className = 'tkb ' + k.cls;
+      el.innerHTML = `<div class="hd"><span>✦ Takeaway</span>${sevHTML(tk.kind)}</div><div class="t">${b.sec[id].t}</div><div class="b">${b.sec[id].b}</div>`;
+    } else {
+      el.className = 'tkb empty2';
+      el.innerHTML = `<div class="msg">✦ Sem takeaway para esta visão. Sugestões da IA:</div>${suggestFor(id).map(t => `<button type="button" class="sg" data-tk="${t.id}">${sevHTML(t.kind)}<span class="sgt">${t.short}</span><span class="ar">›</span></button>`).join('')}`;
+    }
+  });
+}
+
+/* =====================================================================
+   11. HEADER, BARRA DE VISÃO E CONTROLES
+   ===================================================================== */
+function closePops(except) { document.querySelectorAll('.pop.open').forEach(p => { if (p !== except) p.classList.remove('open'); }); }
+function buildHeader() {
+  const wrap = $('#filters');
+  DIMS.forEach(d => {
+    const f = document.createElement('div'); f.className = 'flt'; f.dataset.k = d.key;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'flt-btn';
+    const l = document.createElement('span'); l.className = 'l'; l.textContent = d.label;
+    const v = document.createElement('span'); v.className = 'v'; btn.append(l, v);
+    const pop = document.createElement('div'); pop.className = 'pop';
+    const hd = document.createElement('div'); hd.className = 'pop-hd';
+    const hs = document.createElement('span'); hs.textContent = d.label + ' · % da base';
+    const hb = document.createElement('button'); hb.type = 'button'; hb.textContent = 'Limpar';
+    hb.onclick = e => { e.stopPropagation(); state.filters[d.key] = []; update(); };
+    hd.append(hs, hb); pop.append(hd);
+    d.opts.forEach(o => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.dataset.id = o.id;
+      const box = document.createElement('span'); box.className = 'box';
+      const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = o.id;
+      b.append(box, nm);
+      if (o.pilot) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = 'piloto'; b.append(tg); }
+      const mt = document.createElement('span'); mt.className = 'mt'; mt.textContent = fm.pct(o.share, 0); b.append(mt);
+      b.onclick = e => { e.stopPropagation(); const s = state.filters[d.key]; const i = s.indexOf(o.id); if (i >= 0) s.splice(i, 1); else s.push(o.id); if (s.length === d.opts.length) state.filters[d.key] = []; update(); };
+      pop.append(b);
+    });
+    btn.onclick = e => { e.stopPropagation(); closePops(pop); pop.classList.toggle('open'); };
+    pop.onclick = e => e.stopPropagation();
+    f.append(btn, pop); wrap.append(f);
+  });
+  $('#tkBtn').onclick = e => { e.stopPropagation(); const p = $('#tkMenu'); closePops(p); renderTkMenu(); p.classList.toggle('open'); };
+  $('#tkMenu').onclick = e => { e.stopPropagation(); const b = e.target.closest('[data-tk]'); if (b) applyTk(TAKEAWAYS.findIndex(t => t.id === b.dataset.tk)); };
+  document.addEventListener('click', () => closePops());
+}
+function renderHeader() {
+  document.querySelectorAll('.flt').forEach(f => {
+    const d = DIM[f.dataset.k], s = normF(state.filters)[d.key];
+    const btn = f.querySelector('.flt-btn');
+    btn.classList.toggle('on', s.length > 0);
+    btn.querySelector('.v').textContent = s.length === 0 ? d.all : s.length === 1 ? s[0] : `${s.length} selecionados`;
+    btn.title = s.length ? s.join(', ') : d.all;
+    f.querySelectorAll('.opt').forEach(o => o.classList.toggle('sel', s.includes(o.dataset.id)));
+  });
+  const tk = CUR.tk;
+  $('#tkLbl').textContent = tk ? `${TAKEAWAYS.indexOf(tk) + 1}/${TAKEAWAYS.length} · ${tk.short}` : 'Visões sugeridas para hoje';
+  $('#tkCnt').textContent = tk ? '✕' : TAKEAWAYS.length;
+  $('#tkCnt').title = tk ? 'Voltar para a visão geral' : '';
+}
+function renderTkMenu() {
+  const menu = $('#tkMenu'), tk = CUR.tk;
+  const chips = f => Object.entries(f).map(([k, v]) => `<span class="mini">${DIM[k].short}: ${v.join(', ')}</span>`).join('');
+  menu.innerHTML = `<div class="pop-hd"><span>✦ Takeaways sugeridos pela IA</span><span style="text-transform:none;letter-spacing:0;font-weight:500">Atualizado em 06/10/2026 07:40 · ${TAKEAWAYS.length} visões</span></div>
+    ${TAKEAWAYS.map((t, i) => { const p = preview(t); return `<button type="button" class="tki${tk === t ? ' on' : ''}" data-tk="${t.id}">
+      <span class="tt"><span class="ix">${i + 1}</span><span>${p.headline}</span></span><span class="kn">${p.key}</span>
+      <span class="ch">${sevHTML(t.kind)}${chips(t.filters)}</span></button>`; }).join('')}
+    <div class="tk-foot"><span>Clique para aplicar os filtros, as anotações e os textos de cada seção</span><span>← → navega · 0 visão geral</span></div>`;
+}
+function renderBar() {
+  const view = $('#view'), nf = normF(state.filters), tk = CUR.tk;
+  if (tk) {
+    const b = CUR.tkb;
+    view.innerHTML = `${sevHTML(tk.kind)}<span class="vt">Visão ${TAKEAWAYS.indexOf(tk) + 1}/${TAKEAWAYS.length} · ${tk.short}</span><span class="va"><b>✦ Ação sugerida:</b> ${b.action}</span>`;
+    view.title = 'Ação sugerida: ' + b.action;
+    return;
+  }
+  view.title = '';
+  const parts = ['<span class="lb">Visão</span>'];
+  const act = DIMS.filter(d => nf[d.key].length);
+  if (!act.length) parts.push('<span class="chip plain">Carteira total PF · todas as políticas</span>');
+  act.forEach(d => { const s = nf[d.key]; parts.push(`<span class="chip"><b>${d.short}:</b>${s.length > 2 ? s.length + ' selecionados' : s.join(', ')}<button type="button" data-rm="${d.key}" title="Remover">×</button></span>`); });
+  if (CUR.hasPolicy && CUR.isPilot && CUR.start != null) parts.push(`<span class="chip ai">Piloto desde ${MONTHS[CUR.start].label} · controle = demais políticas</span>`);
+  if (act.length) parts.push('<button type="button" class="clear" data-rm="*">Limpar tudo</button>');
+  view.innerHTML = parts.join('');
+}
+function syncControls() {
+  $('#swProj').checked = state.proj; $('#swBoot').checked = state.boot; $('#swCmp').checked = state.compare; $('#swAnn').checked = state.annot;
+  document.querySelectorAll('.seg[data-k]').forEach(sgm => { const k = sgm.dataset.k; sgm.querySelectorAll('button').forEach(b => b.classList.toggle('on', String(state[k]) === b.dataset.v)); });
+  document.querySelector('.seg[data-k="hor"]').classList.toggle('dis', !state.proj);
+  $('#ctlCmp').classList.toggle('dis', !CUR.hasPolicy);
+  $('#ctlAnn').classList.toggle('dis', !CUR.tk);
+  $('#chkSaf').checked = state.safras;
+  $('#chkSaf').parentElement.style.opacity = state.rview === 'curva' ? 1 : .45;
+}
+
+/* =====================================================================
+   12. ORQUESTRAÇÃO
+   ===================================================================== */
+let CUR = null, prevCmp = false;
+function activeTk() { return TAKEAWAYS.find(t => sameF({ ...EMPTY(), ...t.filters }, state.filters)) || null; }
+function update() {
+  const base = computeView(state.filters);
+  CUR = Object.create(base);
+  CUR.cmp = base.hasPolicy && state.compare;
+  if (CUR.cmp && !prevCmp && state.c1 === 'vol') state.c1 = 'cli';
+  if (!CUR.cmp && prevCmp && state.c1 === 'cli') state.c1 = 'vol';
+  prevCmp = CUR.cmp;
+  CUR.tk = activeTk(); CUR.tkb = CUR.tk ? CUR.tk.build(base) : null;
+  document.querySelectorAll('.tip').forEach(t => { t.style.opacity = 0; }); d3.selectAll('.L-hover > *').remove();
+  renderHeader(); renderBar(); syncControls();
+  renderC1(); renderRisk(); renderRent(); renderTakeaways();
+  if ($('#tkMenu').classList.contains('open')) renderTkMenu();
+}
+function applyTk(i) {
+  if (i < 0) { state.filters = EMPTY(); state.c1 = 'vol'; state.rm = 'ccpb'; state.risk = 'an'; state.rmet = 'o30'; }
+  else {
+    const t = TAKEAWAYS[i];
+    state.filters = { ...EMPTY(), ...JSON.parse(JSON.stringify(t.filters)) };
+    Object.assign(state, t.view); state.annot = true; state.compare = true; state.proj = true; state.rview = 'curva';
+    prevCmp = !!normF(state.filters).cliente.length;
+  }
+  closePops(); update();
+}
+
+// eventos
+document.addEventListener('click', e => {
+  const rm = e.target.closest('[data-rm]'); if (rm) { const k = rm.dataset.rm; if (k === '*') state.filters = EMPTY(); else state.filters[k] = []; update(); return; }
+  const tkb = e.target.closest('[data-tk]'); if (tkb) { applyTk(TAKEAWAYS.findIndex(t => t.id === tkb.dataset.tk)); return; }
+  const pol = e.target.closest('[data-pol]'); if (pol) { state.filters.cliente = [pol.dataset.pol]; update(); return; }
+  const sb = e.target.closest('.seg[data-k] button'); if (sb) { const k = sb.parentElement.dataset.k; const v = sb.dataset.v; state[k] = (k === 'hor' || k === 'conf') ? +v : v; update(); }
+});
+$('#tkCnt').addEventListener('click', e => { if (CUR.tk) { e.stopPropagation(); applyTk(-1); } });
+$('#swProj').onchange = e => { state.proj = e.target.checked; update(); };
+$('#swBoot').onchange = e => { state.boot = e.target.checked; update(); };
+$('#swCmp').onchange = e => { state.compare = e.target.checked; update(); };
+$('#swAnn').onchange = e => { state.annot = e.target.checked; update(); };
+$('#chkSaf').onchange = e => { state.safras = e.target.checked; if (state.safras) state.rview = 'curva'; update(); };
+$('#btnTheme').onclick = () => { state.dark = !state.dark; stage.classList.toggle('dark', state.dark); document.body.classList.toggle('dark', state.dark); update(); };
+$('#btnFull').onclick = () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); };
+document.addEventListener('fullscreenchange', fit);
+function step(dir) { const i = CUR.tk ? TAKEAWAYS.indexOf(CUR.tk) : -1; let n = i + dir; if (n >= TAKEAWAYS.length) n = -1; if (n < -1) n = TAKEAWAYS.length - 1; applyTk(n); }
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') return;
+  const k = e.key.toLowerCase();
+  if (k === 'arrowright') step(1); else if (k === 'arrowleft') step(-1); else if (k === '0') applyTk(-1);
+  else if (k === 'p') { state.proj = !state.proj; update(); } else if (k === 'b') { state.boot = !state.boot; update(); }
+  else if (k === 'c') { state.compare = !state.compare; update(); } else if (k === 'a') { state.annot = !state.annot; update(); }
+  else if (k === 't') $('#btnTheme').click(); else if (k === 'f') $('#btnFull').click(); else if (k === 'escape') closePops();
+});
+
+buildHeader();
+update();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => update());
+})();
+</script>
+</body>
+</html>
