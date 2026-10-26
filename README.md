@@ -39,3 +39,15 @@ Pasta [`dashboard-autorizador/`](dashboard-autorizador/). Slide único 16:9 em H
 - Filtros no topo e menu de takeaways da IA (← → navega entre as visões).
 
 Abra `dashboard-autorizador/index.html` no navegador. O d3 vem do CDN, com cópia local em `vendor/` caso a rede bloqueie.
+
+---
+
+# One-Page Crédito PF | Cartões (protótipo)
+
+Pasta [`one-page-cartoes/`](one-page-cartoes/). Apresentação em HTML com dois slides 16:9, **dados fictícios**, para material executivo de cartões.
+
+- **Slide 1 — One-page de indicadores:** seis blocos com histórico trimestral (4T24–2T26) e visão mensal no último trimestre: Limite e Poder de Compra, Aumentos e Reduções, Concessão, Rentabilidade, Amortização e Atraso, Suficiência e SoW. Leitura em "dois andares": volumes em barras embaixo, taxa principal em linha em cima, todos os pontos rotulados.
+- **Slide 2 — Efeito das entregas:** Faturamento (com "lupa" que amplia a parcela das ações) e Over30 MOB3 por safra. Um botão de frente (Overlimit, Aumentos, Concessão) ajusta os dois gráficos e mostra as entregas, os pilotos e o controle.
+- Navegação com ← → (ou os botões no canto), tela cheia e escala automática para qualquer resolução.
+
+Abra `one-page-cartoes/index.html` no navegador. Arquivo único, sem dependências além da fonte IBM Plex Sans (Google Fonts).
