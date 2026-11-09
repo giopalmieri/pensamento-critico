@@ -51,3 +51,16 @@ Pasta [`one-page-cartoes/`](one-page-cartoes/). Apresentação em HTML com dois 
 - Navegação com ← → (ou os botões no canto), tela cheia e escala automática para qualquer resolução.
 
 Abra `one-page-cartoes/index.html` no navegador. Arquivo único, sem dependências além da fonte IBM Plex Sans (Google Fonts).
+
+---
+
+# Monitor Overlimit e Autorizador (protótipo)
+
+Pasta [`monitor-overlimit/`](monitor-overlimit/). Painel em HTML com **dados sintéticos** para acompanhar o overlimit e o autorizador do transacional, no diário (D-1) e no mensal.
+
+- **Visão geral:** tabelão com os indicadores de faturamento, controles do autorizador e risco. No diário mostra os últimos 7 dias, médias de 7 e 30 dias e a variação contra a média de 30 dias. No mensal mostra os últimos 6 meses, média de 12 meses, mesmo mês do ano anterior e variação a/a. Cada linha tem farol, meta 2027 e um minigráfico de tendência com a reta de direção.
+- **Quebras:** cada indicador abre em subníveis dentro da tabela.
+- **Pop-up por indicador:** série temporal com projeção e faixa de 80%, quebra por rating, nicho, target, faixa de renda ou MOB da concessão.
+- **Seções:** Faturamento, Autorizador e controles, Risco e exposição e Mapa do farol.
+
+Abra `monitor-overlimit/index.html` no navegador. Arquivo único, sem dependências externas.
